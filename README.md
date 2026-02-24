@@ -43,12 +43,21 @@ Projet perso de mini-jeu web inspiré de Snake, avec une direction visuelle "lim
 
 ## Backlog
 - Definir puis implementer l'ecran de lancement principal (avant la pre-run).
+- Definir une procedure "safe push" pour separer compte perso/pro avant publication distante.
 
 ## UX pass (clean/minimal)
 - Hierarchie visuelle des phases `waiting_start`, `running`, `ended` clarifiee.
 - HUD compacte avec priorite lecture: points run/total, vies, temps restant.
 - Ecran de fin retravaille: titre, sous-texte contextuel, stats, CTA lisibles.
-- Bouton `Ameliorer la limace` volontairement desactive (pas de dependance shop pour cette phase).
+
+## Store v1 (UI-only talents)
+- Ouverture du store depuis l'ecran de fin via `Ameliorer la limace`.
+- 3 talents placeholders affiches (uniquement les talents disponibles).
+- Format carte: image placeholder + titre + `(niveau/max)` + cout du prochain niveau.
+- Popup detail: header (image + titre), description, croix de fermeture, bouton `Ameliorer pour Xp.`.
+- Achat: depense des `totalPoints` persistants en `localStorage`.
+- Au niveau max: talent conserve visible avec etat `MAX` et bouton d'upgrade bloque.
+- Les effets gameplay des talents restent hors scope de cette version (implementation progressive ensuite).
 
 ## Backlog UI futur
 - Ecran principal de lancement avant la pre-run.

@@ -1,5 +1,11 @@
 import Phaser from 'phaser';
-import { collectTalentEffectIds, loadMetaState, saveMetaState } from '../game/metaState';
+import {
+  collectTalentEffectIds,
+  getStoreTalentItems,
+  loadMetaState,
+  saveMetaState,
+  upgradeTalentLevel,
+} from '../game/metaState';
 import { createInitialRunState, queueDirection, stepRun } from '../game/runState';
 import { ensureRogieSpawn } from '../game/spawnSystem';
 import type { Direction, GridSize, MetaState, RunState } from '../game/types';
@@ -15,6 +21,24 @@ const HUD_BG_COLOR = 0x111829;
 const BUTTON_PRIMARY = 0x396dff;
 const BUTTON_PRIMARY_HOVER = 0x4b7dff;
 const BUTTON_PRIMARY_PRESS = 0x2d5de3;
+const BUTTON_DISABLED = 0x343848;
+const BUTTON_SECONDARY = 0x2e5fd8;
+const BUTTON_SECONDARY_HOVER = 0x3d6fe6;
+const BUTTON_SECONDARY_PRESS = 0x2650b6;
+const STORE_OVERLAY_BG = 0x0a0e17;
+const STORE_CARD_BG = 0x1b2233;
+const STORE_CARD_BORDER = 0x364563;
+const STORE_CARD_IMAGE_BG = 0x2b3856;
+const STORE_POPUP_BG = 0x0f1523;
+
+interface StoreCardUi {
+  talentId: string;
+  bg: Phaser.GameObjects.Rectangle;
+  imageBg: Phaser.GameObjects.Rectangle;
+  imageText: Phaser.GameObjects.Text;
+  titleText: Phaser.GameObjects.Text;
+  costText: Phaser.GameObjects.Text;
+}
 
 export class GameScene extends Phaser.Scene {
   private runState!: RunState;
@@ -50,6 +74,38 @@ export class GameScene extends Phaser.Scene {
   private upgradeButtonText!: Phaser.GameObjects.Text;
 
   private upgradeHintText!: Phaser.GameObjects.Text;
+
+  private isStoreOpen = false;
+
+  private selectedStoreTalentId: string | null = null;
+
+  private storeOverlayBg!: Phaser.GameObjects.Rectangle;
+
+  private storeTitleText!: Phaser.GameObjects.Text;
+
+  private storePointsText!: Phaser.GameObjects.Text;
+
+  private storeCloseBg!: Phaser.GameObjects.Rectangle;
+
+  private storeCloseText!: Phaser.GameObjects.Text;
+
+  private storeCardUis: StoreCardUi[] = [];
+
+  private storePopupBg!: Phaser.GameObjects.Rectangle;
+
+  private storePopupCloseText!: Phaser.GameObjects.Text;
+
+  private storePopupImageBg!: Phaser.GameObjects.Rectangle;
+
+  private storePopupImageText!: Phaser.GameObjects.Text;
+
+  private storePopupTitleText!: Phaser.GameObjects.Text;
+
+  private storePopupDescriptionText!: Phaser.GameObjects.Text;
+
+  private storePopupUpgradeBg!: Phaser.GameObjects.Rectangle;
+
+  private storePopupUpgradeText!: Phaser.GameObjects.Text;
 
   private tickAccumulatorMs = 0;
 
@@ -94,6 +150,7 @@ export class GameScene extends Phaser.Scene {
       .setVisible(false);
 
     this.createEndScreenUi();
+    this.createStoreUi();
     this.registerInputs();
     this.redraw();
   }
@@ -145,8 +202,19 @@ export class GameScene extends Phaser.Scene {
 
   private restartRun() {
     this.tickAccumulatorMs = 0;
+    this.closeStore();
     this.runState = this.createFreshRunState();
     this.redraw();
+  }
+
+  private setEndScreenButtonsInteractive(enabled: boolean) {
+    if (enabled) {
+      this.restartButtonBg.setInteractive({ useHandCursor: true });
+      this.upgradeButtonBg.setInteractive({ useHandCursor: true });
+      return;
+    }
+    this.restartButtonBg.disableInteractive();
+    this.upgradeButtonBg.disableInteractive();
   }
 
   private createEndScreenUi() {
@@ -221,27 +289,369 @@ export class GameScene extends Phaser.Scene {
       .setVisible(false);
 
     this.upgradeButtonBg = this.add
-      .rectangle(centerX, centerY + 162, 280, 52, 0x2f3340, 1)
-      .setStrokeStyle(2, 0x4c5368)
+      .rectangle(centerX, centerY + 162, 280, 52, BUTTON_SECONDARY, 1)
+      .setStrokeStyle(2, 0x7ea4ff)
+      .setInteractive({ useHandCursor: true })
       .setVisible(false);
+    this.upgradeButtonBg.on('pointerdown', () => {
+      if (this.runState.phase !== 'ended') {
+        return;
+      }
+      this.upgradeButtonBg.setFillStyle(BUTTON_SECONDARY_PRESS, 1);
+      this.openStore();
+    });
+    this.upgradeButtonBg.on('pointerover', () => {
+      this.upgradeButtonBg.setFillStyle(BUTTON_SECONDARY_HOVER, 1);
+    });
+    this.upgradeButtonBg.on('pointerout', () => {
+      this.upgradeButtonBg.setFillStyle(BUTTON_SECONDARY, 1);
+    });
+    this.upgradeButtonBg.on('pointerup', () => {
+      this.upgradeButtonBg.setFillStyle(BUTTON_SECONDARY_HOVER, 1);
+    });
 
     this.upgradeButtonText = this.add
       .text(centerX, centerY + 162, 'Ameliorer la limace', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '19px',
-        color: '#9da3b8',
+        color: '#ffffff',
       })
       .setOrigin(0.5)
       .setVisible(false);
 
     this.upgradeHintText = this.add
-      .text(centerX, centerY + 198, 'Disponible bientot', {
+      .text(centerX, centerY + 198, 'Ouvre la boutique des talents', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '13px',
         color: '#7f889f',
       })
       .setOrigin(0.5)
       .setVisible(false);
+  }
+
+  private createStoreUi() {
+    const centerX = BOARD_OFFSET_X + BOARD_WIDTH / 2;
+    const centerY = BOARD_OFFSET_Y + BOARD_HEIGHT / 2;
+    const storeItems = getStoreTalentItems(this.meta);
+    const cardWidth = 142;
+    const cardHeight = 198;
+    const cardGap = 12;
+    const rowWidth = storeItems.length * cardWidth + Math.max(0, storeItems.length - 1) * cardGap;
+    const startX = centerX - rowWidth / 2 + cardWidth / 2;
+    const cardY = centerY + 10;
+
+    this.storeOverlayBg = this.add
+      .rectangle(centerX, centerY, BOARD_WIDTH, BOARD_HEIGHT, STORE_OVERLAY_BG, 0.96)
+      .setDepth(40)
+      .setVisible(false);
+
+    this.storeTitleText = this.add
+      .text(centerX, BOARD_OFFSET_Y + 28, 'Boutique de la limace', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '26px',
+        color: '#eef3ff',
+      })
+      .setOrigin(0.5)
+      .setDepth(41)
+      .setVisible(false);
+
+    this.storePointsText = this.add
+      .text(BOARD_OFFSET_X + 20, BOARD_OFFSET_Y + 52, '', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '17px',
+        color: '#ffd892',
+      })
+      .setDepth(41)
+      .setVisible(false);
+
+    this.storeCloseBg = this.add
+      .rectangle(BOARD_OFFSET_X + BOARD_WIDTH - 26, BOARD_OFFSET_Y + 24, 28, 28, 0x2f3b56, 1)
+      .setStrokeStyle(1, 0x596a90)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(41)
+      .setVisible(false);
+    this.storeCloseBg.on('pointerdown', (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+      event.stopPropagation();
+      this.closeStore();
+    });
+
+    this.storeCloseText = this.add
+      .text(BOARD_OFFSET_X + BOARD_WIDTH - 26, BOARD_OFFSET_Y + 24, 'X', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '15px',
+        color: '#ffffff',
+      })
+      .setOrigin(0.5)
+      .setDepth(42)
+      .setVisible(false);
+
+    this.storeCardUis = storeItems.map((item, index) => {
+      const cardCenterX = startX + index * (cardWidth + cardGap);
+      const bg = this.add
+        .rectangle(cardCenterX, cardY, cardWidth, cardHeight, STORE_CARD_BG, 1)
+        .setStrokeStyle(2, STORE_CARD_BORDER)
+        .setInteractive({ useHandCursor: true })
+        .setDepth(41)
+        .setVisible(false);
+      bg.on(
+        'pointerdown',
+        (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+          event.stopPropagation();
+        if (this.selectedStoreTalentId) {
+          return;
+        }
+        this.openStoreTalentDetails(item.id);
+        },
+      );
+
+      const imageBg = this.add
+        .rectangle(cardCenterX, cardY - 48, 84, 84, STORE_CARD_IMAGE_BG, 1)
+        .setStrokeStyle(1, 0x6178ad)
+        .setDepth(42)
+        .setVisible(false);
+
+      const imageText = this.add
+        .text(cardCenterX, cardY - 48, item.imageToken, {
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '24px',
+          color: '#d9e5ff',
+        })
+        .setOrigin(0.5)
+        .setDepth(43)
+        .setVisible(false);
+
+      const titleText = this.add
+        .text(cardCenterX, cardY + 20, '', {
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '15px',
+          color: '#f3f6ff',
+          align: 'center',
+          wordWrap: { width: cardWidth - 16 },
+        })
+        .setOrigin(0.5)
+        .setDepth(42)
+        .setVisible(false);
+
+      const costText = this.add
+        .text(cardCenterX, cardY + 76, '', {
+          fontFamily: 'Arial, sans-serif',
+          fontSize: '17px',
+          color: '#ffd892',
+          align: 'center',
+        })
+        .setOrigin(0.5)
+        .setDepth(42)
+        .setVisible(false);
+
+      return { talentId: item.id, bg, imageBg, imageText, titleText, costText };
+    });
+
+    this.storePopupBg = this.add
+      .rectangle(centerX, centerY + 8, 360, 262, STORE_POPUP_BG, 1)
+      .setStrokeStyle(2, 0x4f618d)
+      .setDepth(45)
+      .setVisible(false);
+
+    this.storePopupCloseText = this.add
+      .text(centerX + 164, centerY - 110, 'X', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '17px',
+        color: '#ffffff',
+      })
+      .setInteractive({ useHandCursor: true })
+      .setOrigin(0.5)
+      .setDepth(46)
+      .setVisible(false);
+    this.storePopupCloseText.on(
+      'pointerdown',
+      (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+        event.stopPropagation();
+      this.closeStoreTalentDetails();
+      },
+    );
+
+    this.storePopupImageBg = this.add
+      .rectangle(centerX - 132, centerY - 76, 78, 78, STORE_CARD_IMAGE_BG, 1)
+      .setStrokeStyle(1, 0x6178ad)
+      .setDepth(46)
+      .setVisible(false);
+
+    this.storePopupImageText = this.add
+      .text(centerX - 132, centerY - 76, '', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '22px',
+        color: '#d9e5ff',
+      })
+      .setOrigin(0.5)
+      .setDepth(47)
+      .setVisible(false);
+
+    this.storePopupTitleText = this.add
+      .text(centerX - 74, centerY - 90, '', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '24px',
+        color: '#f2f6ff',
+      })
+      .setDepth(46)
+      .setVisible(false);
+
+    this.storePopupDescriptionText = this.add
+      .text(centerX - 132, centerY - 24, '', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '16px',
+        color: '#c4d0e8',
+        align: 'left',
+        wordWrap: { width: 268 },
+      })
+      .setDepth(46)
+      .setVisible(false);
+
+    this.storePopupUpgradeBg = this.add
+      .rectangle(centerX, centerY + 86, 284, 50, BUTTON_PRIMARY, 1)
+      .setStrokeStyle(2, 0x87a8ff)
+      .setInteractive({ useHandCursor: true })
+      .setDepth(46)
+      .setVisible(false);
+    this.storePopupUpgradeBg.on(
+      'pointerdown',
+      (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+        event.stopPropagation();
+      if (!this.selectedStoreTalentId) {
+        return;
+      }
+      if (upgradeTalentLevel(this.meta, this.selectedStoreTalentId)) {
+        this.refreshStoreUi();
+      }
+      },
+    );
+
+    this.storePopupUpgradeText = this.add
+      .text(centerX, centerY + 86, '', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '18px',
+        color: '#ffffff',
+      })
+      .setOrigin(0.5)
+      .setDepth(47)
+      .setVisible(false);
+  }
+
+  private openStore() {
+    this.isStoreOpen = true;
+    this.selectedStoreTalentId = null;
+    this.setEndScreenButtonsInteractive(false);
+    this.setStorePopupVisible(false);
+    this.refreshStoreUi();
+  }
+
+  private closeStore() {
+    this.isStoreOpen = false;
+    this.selectedStoreTalentId = null;
+    this.setEndScreenButtonsInteractive(true);
+    this.setStoreVisible(false);
+    this.setStorePopupVisible(false);
+  }
+
+  private openStoreTalentDetails(talentId: string) {
+    this.selectedStoreTalentId = talentId;
+    this.setStorePopupVisible(true);
+    this.refreshStoreUi();
+  }
+
+  private closeStoreTalentDetails() {
+    this.selectedStoreTalentId = null;
+    this.setStorePopupVisible(false);
+  }
+
+  private setStoreVisible(visible: boolean) {
+    this.storeOverlayBg.setVisible(visible);
+    this.storeTitleText.setVisible(visible);
+    this.storePointsText.setVisible(visible);
+    this.storeCloseBg.setVisible(visible);
+    this.storeCloseText.setVisible(visible);
+    this.storeCardUis.forEach((card) => {
+      card.bg.setVisible(visible);
+      card.imageBg.setVisible(visible);
+      card.imageText.setVisible(visible);
+      card.titleText.setVisible(visible);
+      card.costText.setVisible(visible);
+    });
+  }
+
+  private setStorePopupVisible(visible: boolean) {
+    this.storePopupBg.setVisible(visible);
+    this.storePopupCloseText.setVisible(visible);
+    this.storePopupImageBg.setVisible(visible);
+    this.storePopupImageText.setVisible(visible);
+    this.storePopupTitleText.setVisible(visible);
+    this.storePopupDescriptionText.setVisible(visible);
+    this.storePopupUpgradeBg.setVisible(visible);
+    this.storePopupUpgradeText.setVisible(visible);
+    this.storeCardUis.forEach((card) => {
+      if (visible) {
+        card.bg.disableInteractive();
+      } else {
+        card.bg.setInteractive({ useHandCursor: true });
+      }
+    });
+  }
+
+  private refreshStoreUi() {
+    const storeItems = getStoreTalentItems(this.meta);
+    this.storePointsText.setText(`Points dispo: ${this.meta.totalPoints} p.`);
+    this.storeCardUis.forEach((card) => {
+      const item = storeItems.find((entry) => entry.id === card.talentId);
+      if (!item) {
+        card.bg.setVisible(false);
+        card.imageBg.setVisible(false);
+        card.imageText.setVisible(false);
+        card.titleText.setVisible(false);
+        card.costText.setVisible(false);
+        return;
+      }
+      card.imageText.setText(item.imageToken);
+      card.titleText.setText(`${item.title} (${item.level}/${item.maxLevel})`);
+      if (item.isMaxed) {
+        card.costText.setText('MAX');
+        card.costText.setColor('#aeb8d1');
+      } else if (item.nextCost === null) {
+        card.costText.setText('---');
+        card.costText.setColor('#aeb8d1');
+      } else {
+        card.costText.setText(`${item.nextCost} p.`);
+        card.costText.setColor('#ffd892');
+      }
+    });
+
+    if (!this.selectedStoreTalentId) {
+      return;
+    }
+
+    const selected = storeItems.find((item) => item.id === this.selectedStoreTalentId);
+    if (!selected) {
+      this.closeStoreTalentDetails();
+      return;
+    }
+    this.storePopupImageText.setText(selected.imageToken);
+    this.storePopupTitleText.setText(`${selected.title} (${selected.level}/${selected.maxLevel})`);
+    this.storePopupDescriptionText.setText(selected.description);
+
+    if (selected.isMaxed) {
+      this.storePopupUpgradeText.setText('MAX atteint');
+      this.storePopupUpgradeBg.setFillStyle(BUTTON_DISABLED, 1);
+      this.storePopupUpgradeBg.disableInteractive();
+      return;
+    }
+
+    const labelCost = selected.nextCost ?? 0;
+    this.storePopupUpgradeText.setText(`Ameliorer pour ${labelCost}p.`);
+    if (selected.canUpgrade) {
+      this.storePopupUpgradeBg.setFillStyle(BUTTON_PRIMARY, 1);
+      this.storePopupUpgradeBg.setInteractive({ useHandCursor: true });
+    } else {
+      this.storePopupUpgradeBg.setFillStyle(BUTTON_DISABLED, 1);
+      this.storePopupUpgradeBg.disableInteractive();
+    }
   }
 
   private setEndScreenVisible(visible: boolean) {
@@ -261,6 +671,13 @@ export class GameScene extends Phaser.Scene {
     if (this.runState.phase === 'ended') {
       this.setEndScreenVisible(true);
       this.drawEndScreen();
+      if (this.isStoreOpen) {
+        this.setStoreVisible(true);
+        this.refreshStoreUi();
+      } else {
+        this.setStoreVisible(false);
+        this.setStorePopupVisible(false);
+      }
       this.hudBg.setVisible(false);
       this.scoreText.setVisible(false);
       this.runInfoText.setVisible(false);
@@ -269,6 +686,7 @@ export class GameScene extends Phaser.Scene {
       return;
     }
 
+    this.closeStore();
     this.setEndScreenVisible(false);
     this.hudBg.setVisible(true);
     this.scoreText.setVisible(true);
