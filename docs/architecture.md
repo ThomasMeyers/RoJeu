@@ -21,7 +21,7 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
 - `src/game/talentCatalog.ts`
   - Declarative talent catalog (title/description/levels/costs/availability/effect IDs by level).
 - `src/game/effects/schema.ts` + `src/game/effects/engine.ts`
-  - Run stat modifier schema and effect aggregation pipeline.
+  - Run stat modifier schema and effect aggregation pipeline (`bave_baveuse` currently boosts `orbScoreMultiplier`).
 - `src/scenes/GameScene.ts`
   - Phaser scene wiring: render loop, HUD/end/store overlays, input wiring, run/meta coordination.
 

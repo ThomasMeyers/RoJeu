@@ -13,12 +13,18 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
   {
     id: 'bave_baveuse',
     title: 'Bave baveuse',
-    description: 'Une bave plus dense qui prepare de futurs bonus de rendement.',
+    description: "Augmente les points d'orb de +10% par niveau.",
     imageToken: 'BB',
     maxLevel: 5,
     costsByLevel: [300, 450, 700, 1000, 1400],
     isAvailable: true,
-    effectIdsByLevel: ['', '', '', '', ''],
+    effectIdsByLevel: [
+      'bave_baveuse_lvl1',
+      'bave_baveuse_lvl2',
+      'bave_baveuse_lvl3',
+      'bave_baveuse_lvl4',
+      'bave_baveuse_lvl5',
+    ],
   },
   {
     id: 'casque',

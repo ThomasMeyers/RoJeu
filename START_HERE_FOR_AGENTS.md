@@ -17,6 +17,7 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - `talent`: upgrade definition from catalog with level/cost rules.
 - `store`: end-of-run overlay used to inspect and upgrade talents.
 - `orb`: target entity collected repeatedly during a run.
+- `bave_baveuse`: active gameplay talent; each level adds +10% to orb score gain.
 
 ## If Request Mentions X, Open Y
 
