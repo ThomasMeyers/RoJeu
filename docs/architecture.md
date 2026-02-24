@@ -9,7 +9,7 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
 - `src/game/types.ts`
   - Shared domain types for run state, meta state, entities, phases, deaths, and stats.
 - `src/game/runState.ts`
-  - Pure run progression logic: direction queueing, step tick, collisions, score changes, run endings.
+  - Pure run progression logic: direction queueing, step tick, collisions, score changes by source, run endings.
 - `src/game/spawnSystem.ts`
   - Spawn/update presence of entities on grid (currently orb-focused behavior).
 - `src/game/boundary.ts`
@@ -21,7 +21,7 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
 - `src/game/talentCatalog.ts`
   - Declarative talent catalog (title/description/levels/costs/availability/effect IDs by level).
 - `src/game/effects/schema.ts` + `src/game/effects/engine.ts`
-  - Run stat modifier schema and effect aggregation pipeline (`bave_baveuse` boosts `orbScoreMultiplier`).
+  - Run stat modifier schema and effect aggregation pipeline (`orb_yield` boosts `orbPointsMultiplier`, `passive_income` boosts `passiveIncomePointsPerSecond`).
 - `src/scenes/GameScene.ts`
   - Phaser scene wiring: render loop, HUD/end/store overlays, input wiring, run/meta coordination.
 
@@ -45,6 +45,12 @@ flowchart TD
 - `RunState`: ephemeral state for one run.
 - `MetaState`: persistent progression across runs.
 - Store UI reads and mutates `MetaState`, while run loop mutates `RunState`.
+
+## Points Pipeline
+
+- Score gains are applied by source (`orb`, `passive_income`) inside run logic.
+- Source multiplier and global multiplier are resolved in run stats (`orbPointsMultiplier`, `globalPointsMultiplier`).
+- Fractional results are preserved in run state remainder before adding whole points to score.
 
 ## Extension Points
 

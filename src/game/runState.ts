@@ -3,6 +3,8 @@ import { resolveBoundary } from './boundary';
 import { consumeEntityAtPoint, ensureOrbSpawn, tickSpawns } from './spawnSystem';
 import type { DeathReason, Direction, GridSize, Point, RunState } from './types';
 
+type ScoreGainSource = 'orb' | 'passive_income';
+
 const isOppositeDirection = (a: Direction, b: Direction): boolean =>
   (a === 'up' && b === 'down') ||
   (a === 'down' && b === 'up') ||
@@ -57,9 +59,36 @@ const loseLife = (state: RunState, grid: GridSize, nowMs: number, cause: DeathRe
   state.pendingDirection = 'right';
 };
 
-const addScore = (state: RunState, baseValue: number): void => {
-  const gained = Math.max(0, Math.round(baseValue * state.stats.orbScoreMultiplier));
+const resolveSourceMultiplier = (state: RunState, source: ScoreGainSource): number => {
+  switch (source) {
+    case 'orb':
+      return state.stats.orbPointsMultiplier;
+    case 'passive_income':
+      return 1;
+    default:
+      return 1;
+  }
+};
+
+const applyPointsGain = (state: RunState, source: ScoreGainSource, baseValue: number): void => {
+  const safeBaseValue = Math.max(0, baseValue);
+  const rawGain = safeBaseValue * resolveSourceMultiplier(state, source) * state.stats.globalPointsMultiplier;
+  const gainWithRemainder = Math.max(0, rawGain + state.pointsFractionRemainder);
+  const gained = Math.floor(gainWithRemainder);
+  state.pointsFractionRemainder = gainWithRemainder - gained;
   state.score += gained;
+};
+
+const applyPassiveIncome = (state: RunState, elapsedMs: number): void => {
+  if (state.stats.passiveIncomePointsPerSecond <= 0 || elapsedMs <= 0) {
+    return;
+  }
+
+  state.passiveIncomeAccumulatorMs += elapsedMs;
+  while (state.passiveIncomeAccumulatorMs >= 1000) {
+    state.passiveIncomeAccumulatorMs -= 1000;
+    applyPointsGain(state, 'passive_income', state.stats.passiveIncomePointsPerSecond);
+  }
 };
 
 export const createInitialRunState = (
@@ -85,6 +114,8 @@ export const createInitialRunState = (
     startedAtMs: null,
     endedAtMs: null,
     deathReason: null,
+    passiveIncomeAccumulatorMs: 0,
+    pointsFractionRemainder: 0,
     runCommitted: false,
   };
 };
@@ -106,6 +137,9 @@ export const stepRun = (state: RunState, grid: GridSize, nowMs: number, deltaMs:
   if (state.phase !== 'running') {
     return;
   }
+
+  const elapsedMs = Math.max(0, Math.min(deltaMs, state.remainingMs));
+  applyPassiveIncome(state, elapsedMs);
 
   state.remainingMs -= deltaMs;
   if (state.remainingMs <= 0) {
@@ -153,7 +187,7 @@ export const stepRun = (state: RunState, grid: GridSize, nowMs: number, deltaMs:
 
   switch (consumed.kind) {
     case 'orb':
-      addScore(state, 100);
+      applyPointsGain(state, 'orb', 100);
       state.orbRespawnAtMs = nowMs + state.stats.orbRespawnDelayMs;
       ensureOrbSpawn(state, grid, nowMs);
       break;

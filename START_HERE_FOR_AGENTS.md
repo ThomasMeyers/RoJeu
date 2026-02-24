@@ -17,7 +17,14 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - `talent`: upgrade definition from catalog with level/cost rules.
 - `store`: end-of-run overlay used to inspect and upgrade talents.
 - `orb`: target entity collected repeatedly during a run.
-- `bave_baveuse`: active gameplay talent; each level adds +10% to orb score gain.
+- `orb_yield`: active gameplay talent; each level adds +10% to orb score gain.
+- `passive_income`: active gameplay talent; each level adds +1 point/s while the run is active.
+
+## Naming Convention
+
+- Keep technical IDs stable and descriptive (`talent.id`, effect IDs, stat keys), independent from UI copy.
+- UI labels/descriptions can be humorous and can change without forcing code-level renames.
+- Any ID rename must include save normalization/migration in `src/game/metaState.ts`.
 
 ## If Request Mentions X, Open Y
 

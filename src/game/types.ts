@@ -28,8 +28,9 @@ export interface RunStats {
   runDurationSec: number;
   baseLives: number;
   baseVisionRadius: number;
-  // Orb-specific multiplier; a future global score multiplier can be layered on top.
-  orbScoreMultiplier: number;
+  orbPointsMultiplier: number;
+  globalPointsMultiplier: number;
+  passiveIncomePointsPerSecond: number;
   tickMs: number;
   boundaryMode: BoundaryMode;
   orbRespawnDelayMs: number;
@@ -57,5 +58,7 @@ export interface RunState {
   startedAtMs: number | null;
   endedAtMs: number | null;
   deathReason: DeathReason | null;
+  passiveIncomeAccumulatorMs: number;
+  pointsFractionRemainder: number;
   runCommitted: boolean;
 }

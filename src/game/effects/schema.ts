@@ -9,41 +9,73 @@ export const createBaseRunStats = (): RunStats => ({
   runDurationSec: 60,
   baseLives: 1,
   baseVisionRadius: 2,
-  orbScoreMultiplier: 1,
+  orbPointsMultiplier: 1,
+  globalPointsMultiplier: 1,
+  passiveIncomePointsPerSecond: 0,
   tickMs: 120,
   boundaryMode: 'wall-kill',
   orbRespawnDelayMs: 0,
 });
 
 export const EFFECT_DEFINITIONS: Record<string, EffectDefinition> = {
-  bave_baveuse_lvl1: {
-    id: 'bave_baveuse_lvl1',
+  orb_yield_lvl1: {
+    id: 'orb_yield_lvl1',
     apply: (stats) => {
-      stats.orbScoreMultiplier += 0.1;
+      stats.orbPointsMultiplier += 0.1;
     },
   },
-  bave_baveuse_lvl2: {
-    id: 'bave_baveuse_lvl2',
+  orb_yield_lvl2: {
+    id: 'orb_yield_lvl2',
     apply: (stats) => {
-      stats.orbScoreMultiplier += 0.1;
+      stats.orbPointsMultiplier += 0.1;
     },
   },
-  bave_baveuse_lvl3: {
-    id: 'bave_baveuse_lvl3',
+  orb_yield_lvl3: {
+    id: 'orb_yield_lvl3',
     apply: (stats) => {
-      stats.orbScoreMultiplier += 0.1;
+      stats.orbPointsMultiplier += 0.1;
     },
   },
-  bave_baveuse_lvl4: {
-    id: 'bave_baveuse_lvl4',
+  orb_yield_lvl4: {
+    id: 'orb_yield_lvl4',
     apply: (stats) => {
-      stats.orbScoreMultiplier += 0.1;
+      stats.orbPointsMultiplier += 0.1;
     },
   },
-  bave_baveuse_lvl5: {
-    id: 'bave_baveuse_lvl5',
+  orb_yield_lvl5: {
+    id: 'orb_yield_lvl5',
     apply: (stats) => {
-      stats.orbScoreMultiplier += 0.1;
+      stats.orbPointsMultiplier += 0.1;
+    },
+  },
+  passive_income_lvl1: {
+    id: 'passive_income_lvl1',
+    apply: (stats) => {
+      stats.passiveIncomePointsPerSecond += 1;
+    },
+  },
+  passive_income_lvl2: {
+    id: 'passive_income_lvl2',
+    apply: (stats) => {
+      stats.passiveIncomePointsPerSecond += 1;
+    },
+  },
+  passive_income_lvl3: {
+    id: 'passive_income_lvl3',
+    apply: (stats) => {
+      stats.passiveIncomePointsPerSecond += 1;
+    },
+  },
+  passive_income_lvl4: {
+    id: 'passive_income_lvl4',
+    apply: (stats) => {
+      stats.passiveIncomePointsPerSecond += 1;
+    },
+  },
+  passive_income_lvl5: {
+    id: 'passive_income_lvl5',
+    apply: (stats) => {
+      stats.passiveIncomePointsPerSecond += 1;
     },
   },
 };

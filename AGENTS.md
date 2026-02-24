@@ -21,6 +21,9 @@
 - Preferer TypeScript strict.
 - Garder une architecture simple: scenes de jeu, logique de grille, rendering, input.
 - Eviter la sur-ingenierie: pas de backend sur le MVP.
+- Les IDs techniques (`talent.id`, `effectId`, noms de stats/keys/events) doivent etre stables, descriptifs et decouples du wording UI.
+- Le texte UI peut rester humoristique et evolutif; ne pas le reutiliser comme naming technique.
+- Toute migration d'ID doit etre geree dans la normalisation du save (`metaState`) et documentee dans les docs agent/architecture.
 
 ## UX et gameplay
 - Controles clavier + tactile obligatoires.

@@ -2,6 +2,14 @@ import type { MetaState } from './types';
 import { TALENT_CATALOG, type TalentCatalogEntry } from './talentCatalog';
 
 const STORAGE_KEY = 'snake-meta-v1';
+const LEGACY_TALENT_IDS = ['casque', 'headlamp'] as const;
+const TALENT_ID_MIGRATIONS: Record<string, string> = {
+  bave_baveuse: 'orb_yield',
+  placeholder_lampe: 'passive_income',
+  around_the_world: 'boundary_wrap',
+  be_like_momo: 'prototype_slot_a',
+  heures_supplementaires: 'prototype_slot_b',
+};
 
 export interface TalentStoreItem {
   id: string;
@@ -35,16 +43,45 @@ const isMetaState = (value: unknown): value is MetaState => {
   );
 };
 
+const resolveNumericLevel = (value: unknown): number => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0;
+  }
+  return value;
+};
+
 const normalizeMetaState = (meta: MetaState): { normalized: MetaState; removedLegacy: boolean } => {
-  const hasLegacyCasque = Object.prototype.hasOwnProperty.call(meta.talentLevels, 'casque');
-  const hasLegacyHeadlamp = Object.prototype.hasOwnProperty.call(meta.talentLevels, 'headlamp');
-  if (!hasLegacyCasque && !hasLegacyHeadlamp) {
+  const talentLevels = { ...meta.talentLevels };
+  let removedLegacy = false;
+
+  Object.entries(TALENT_ID_MIGRATIONS).forEach(([oldId, newId]) => {
+    if (!Object.prototype.hasOwnProperty.call(talentLevels, oldId)) {
+      return;
+    }
+
+    const oldLevel = resolveNumericLevel(talentLevels[oldId]);
+    const currentNewValue = talentLevels[newId];
+    const newLevel = resolveNumericLevel(currentNewValue);
+    const mergedLevel = Math.max(oldLevel, newLevel);
+    if (newLevel !== mergedLevel || typeof currentNewValue !== 'number' || !Number.isFinite(currentNewValue)) {
+      talentLevels[newId] = mergedLevel;
+    }
+    delete talentLevels[oldId];
+    removedLegacy = true;
+  });
+
+  LEGACY_TALENT_IDS.forEach((legacyId) => {
+    if (!Object.prototype.hasOwnProperty.call(talentLevels, legacyId)) {
+      return;
+    }
+    delete talentLevels[legacyId];
+    removedLegacy = true;
+  });
+
+  if (!removedLegacy) {
     return { normalized: meta, removedLegacy: false };
   }
 
-  const talentLevels = { ...meta.talentLevels };
-  delete talentLevels.casque;
-  delete talentLevels.headlamp;
   return {
     normalized: {
       ...meta,
