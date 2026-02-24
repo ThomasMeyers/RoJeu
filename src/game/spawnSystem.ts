@@ -32,26 +32,26 @@ export const consumeEntityAtPoint = (state: RunState, point: Point) => {
   return entity;
 };
 
-export const ensureRogieSpawn = (state: RunState, grid: GridSize, nowMs: number): void => {
-  const hasRogie = state.entities.some((entity) => entity.kind === 'rogie');
-  if (hasRogie) {
+export const ensureOrbSpawn = (state: RunState, grid: GridSize, nowMs: number): void => {
+  const hasOrb = state.entities.some((entity) => entity.kind === 'orb');
+  if (hasOrb) {
     return;
   }
 
-  if (state.rogieRespawnAtMs !== null && nowMs < state.rogieRespawnAtMs) {
+  if (state.orbRespawnAtMs !== null && nowMs < state.orbRespawnAtMs) {
     return;
   }
 
   const blocked = [...state.slug, ...state.entities.map((entity) => entity.position)];
   state.entities.push({
     id: nextEntityId(),
-    kind: 'rogie',
+    kind: 'orb',
     position: randomFreePoint(grid, blocked),
     expiresAtMs: null,
   });
-  state.rogieRespawnAtMs = null;
+  state.orbRespawnAtMs = null;
 };
 
 export const tickSpawns = (state: RunState, grid: GridSize, nowMs: number): void => {
-  ensureRogieSpawn(state, grid, nowMs);
+  ensureOrbSpawn(state, grid, nowMs);
 };

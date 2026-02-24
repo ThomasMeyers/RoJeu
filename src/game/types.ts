@@ -15,7 +15,7 @@ export interface GridSize {
   rows: number;
 }
 
-export type EntityKind = 'rogie';
+export type EntityKind = 'orb';
 
 export interface SpawnEntity {
   id: string;
@@ -28,10 +28,11 @@ export interface RunStats {
   runDurationSec: number;
   baseLives: number;
   baseVisionRadius: number;
-  pointsMultiplier: number;
+  // Orb-specific multiplier; a future global score multiplier can be layered on top.
+  orbScoreMultiplier: number;
   tickMs: number;
   boundaryMode: BoundaryMode;
-  rogieRespawnDelayMs: number;
+  orbRespawnDelayMs: number;
 }
 
 export interface MetaState {
@@ -50,7 +51,7 @@ export interface RunState {
   phase: RunPhase;
   boundaryMode: BoundaryMode;
   entities: SpawnEntity[];
-  rogieRespawnAtMs: number | null;
+  orbRespawnAtMs: number | null;
   activeEffectIds: string[];
   stats: RunStats;
   startedAtMs: number | null;

@@ -7,7 +7,7 @@ import {
   upgradeTalentLevel,
 } from '../game/metaState';
 import { createInitialRunState, queueDirection, stepRun } from '../game/runState';
-import { ensureRogieSpawn } from '../game/spawnSystem';
+import { ensureOrbSpawn } from '../game/spawnSystem';
 import type { Direction, GridSize, MetaState, RunState } from '../game/types';
 import { isVisibleFromHead } from '../game/visibility';
 
@@ -196,7 +196,7 @@ export class GameScene extends Phaser.Scene {
 
   private createFreshRunState(): RunState {
     const state = createInitialRunState(GRID, collectTalentEffectIds(this.meta), this.time.now);
-    ensureRogieSpawn(state, GRID, this.time.now);
+    ensureOrbSpawn(state, GRID, this.time.now);
     return state;
   }
 
@@ -728,7 +728,7 @@ export class GameScene extends Phaser.Scene {
       const y = BOARD_OFFSET_Y + entity.position.y * CELL_SIZE + CELL_SIZE / 2;
 
       switch (entity.kind) {
-        case 'rogie':
+        case 'orb':
           this.graphics.fillStyle(0xffd35f, 1);
           this.graphics.fillCircle(x, y, CELL_SIZE * 0.38);
           break;

@@ -1,6 +1,6 @@
 import { resolveRunStats } from './effects/engine';
 import { resolveBoundary } from './boundary';
-import { consumeEntityAtPoint, ensureRogieSpawn, tickSpawns } from './spawnSystem';
+import { consumeEntityAtPoint, ensureOrbSpawn, tickSpawns } from './spawnSystem';
 import type { DeathReason, Direction, GridSize, Point, RunState } from './types';
 
 const isOppositeDirection = (a: Direction, b: Direction): boolean =>
@@ -58,7 +58,7 @@ const loseLife = (state: RunState, grid: GridSize, nowMs: number, cause: DeathRe
 };
 
 const addScore = (state: RunState, baseValue: number): void => {
-  const gained = Math.max(0, Math.round(baseValue * state.stats.pointsMultiplier));
+  const gained = Math.max(0, Math.round(baseValue * state.stats.orbScoreMultiplier));
   state.score += gained;
 };
 
@@ -79,7 +79,7 @@ export const createInitialRunState = (
     phase: 'waiting_start',
     boundaryMode: stats.boundaryMode,
     entities: [],
-    rogieRespawnAtMs: nowMs,
+    orbRespawnAtMs: nowMs,
     activeEffectIds,
     stats,
     startedAtMs: null,
@@ -152,10 +152,10 @@ export const stepRun = (state: RunState, grid: GridSize, nowMs: number, deltaMs:
   }
 
   switch (consumed.kind) {
-    case 'rogie':
-      addScore(state, 10);
-      state.rogieRespawnAtMs = nowMs + state.stats.rogieRespawnDelayMs;
-      ensureRogieSpawn(state, grid, nowMs);
+    case 'orb':
+      addScore(state, 100);
+      state.orbRespawnAtMs = nowMs + state.stats.orbRespawnDelayMs;
+      ensureOrbSpawn(state, grid, nowMs);
       break;
     default:
       break;

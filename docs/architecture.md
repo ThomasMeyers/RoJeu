@@ -11,7 +11,7 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
 - `src/game/runState.ts`
   - Pure run progression logic: direction queueing, step tick, collisions, score changes, run endings.
 - `src/game/spawnSystem.ts`
-  - Spawn/update presence of entities on grid (currently Rogie-focused behavior).
+  - Spawn/update presence of entities on grid (currently orb-focused behavior).
 - `src/game/boundary.ts`
   - Boundary rule resolver (`wall-kill` vs `wrap-around`) for movement outcomes.
 - `src/game/visibility.ts`
@@ -51,4 +51,3 @@ flowchart TD
 - Add gameplay effect: define in `effects/schema.ts`, bind via `talentCatalog.ts`.
 - Add talent UI behavior: `metaState.ts` for rule checks + `GameScene.ts` for presentation/interactions.
 - Add entities: extend `EntityKind` in `types.ts`, spawn logic in `spawnSystem.ts`, render path in `GameScene.ts`.
-

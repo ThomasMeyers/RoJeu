@@ -16,12 +16,12 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - `meta`: persistent progression (`totalPoints`, `talentLevels`, `runCount`) in local storage.
 - `talent`: upgrade definition from catalog with level/cost rules.
 - `store`: end-of-run overlay used to inspect and upgrade talents.
-- `rogie`: target entity to catch repeatedly during a run.
+- `orb`: target entity collected repeatedly during a run.
 
 ## If Request Mentions X, Open Y
 
 - Run timer, collisions, start/stop phases -> `src/game/runState.ts`, `src/game/types.ts`
-- Spawn behavior, Rogie appearance -> `src/game/spawnSystem.ts`
+- Spawn behavior, orb appearance -> `src/game/spawnSystem.ts`
 - Fog of war / vision radius -> `src/game/visibility.ts`, `src/scenes/GameScene.ts`
 - Store cards, popup, click behavior -> `src/scenes/GameScene.ts`, `src/game/metaState.ts`
 - Talent definitions, availability, costs -> `src/game/talentCatalog.ts`
@@ -39,4 +39,3 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - `npm run build`
 - Verify one full run lifecycle: `waiting_start -> running -> ended`
 - Verify store flow: open -> inspect card -> upgrade -> close without side effects
-
