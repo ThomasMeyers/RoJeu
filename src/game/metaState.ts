@@ -35,6 +35,25 @@ const isMetaState = (value: unknown): value is MetaState => {
   );
 };
 
+const normalizeMetaState = (meta: MetaState): { normalized: MetaState; removedLegacy: boolean } => {
+  const hasLegacyCasque = Object.prototype.hasOwnProperty.call(meta.talentLevels, 'casque');
+  const hasLegacyHeadlamp = Object.prototype.hasOwnProperty.call(meta.talentLevels, 'headlamp');
+  if (!hasLegacyCasque && !hasLegacyHeadlamp) {
+    return { normalized: meta, removedLegacy: false };
+  }
+
+  const talentLevels = { ...meta.talentLevels };
+  delete talentLevels.casque;
+  delete talentLevels.headlamp;
+  return {
+    normalized: {
+      ...meta,
+      talentLevels,
+    },
+    removedLegacy: true,
+  };
+};
+
 export const loadMetaState = (): MetaState => {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -47,7 +66,11 @@ export const loadMetaState = (): MetaState => {
       return createDefaultMetaState();
     }
 
-    return parsed;
+    const { normalized, removedLegacy } = normalizeMetaState(parsed);
+    if (removedLegacy) {
+      saveMetaState(normalized);
+    }
+    return normalized;
   } catch {
     return createDefaultMetaState();
   }
