@@ -3,6 +3,14 @@
 ## Scope
 - Travailler uniquement dans `Personal Projects/Snake/` pour ce projet.
 - Ne pas melanger les conventions Apps Script avec ce jeu web.
+- Garder ce fichier court: regles de collaboration uniquement.
+
+## Agent quickstart docs
+- Point d'entree: `START_HERE_FOR_AGENTS.md`
+- Carte technique: `docs/architecture.md`
+- Playbooks d'intervention: `docs/agent-playbooks.md`
+- Maintenance documentaire: `docs/doc-maintenance.md`
+- Decisions techniques: `docs/adr/`
 
 ## Priorites
 1. MVP jouable rapidement (desktop + mobile).
@@ -22,3 +30,8 @@
 ## Qualite
 - Ajouter des tests unitaires cibles sur la logique de grille/collision si possible.
 - Verifier le comportement sur ecran mobile avant publication.
+
+## Regle de mise a jour docs
+- Si un changement modifie un flux, un module cle, ou un invariant gameplay/store, mettre a jour au minimum:
+  - `START_HERE_FOR_AGENTS.md`
+  - `docs/architecture.md` ou `docs/agent-playbooks.md` selon le type de changement

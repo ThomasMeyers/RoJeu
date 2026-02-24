@@ -17,6 +17,13 @@ Projet perso de mini-jeu web inspiré de Snake, avec une direction visuelle "lim
 - Build de prod: `npm run build`
 - Preview locale: `npm run preview`
 
+## Agent Quickstart
+- Point d'entree rapide: `START_HERE_FOR_AGENTS.md`
+- Architecture technique: `docs/architecture.md`
+- Workflows d'intervention: `docs/agent-playbooks.md`
+- Journal des decisions: `docs/adr/`
+- Checklist de maintenance: `docs/doc-maintenance.md`
+
 ## Plan grosse maille
 
 ### MVP
