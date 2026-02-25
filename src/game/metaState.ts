@@ -6,7 +6,8 @@ const LEGACY_TALENT_IDS = ['casque', 'headlamp'] as const;
 const TALENT_ID_MIGRATIONS: Record<string, string> = {
   bave_baveuse: 'orb_yield',
   placeholder_lampe: 'passive_income',
-  around_the_world: 'boundary_wrap',
+  around_the_world: 'vision_bonus_orb',
+  boundary_wrap: 'vision_bonus_orb',
   be_like_momo: 'prototype_slot_a',
   heures_supplementaires: 'prototype_slot_b',
 };
@@ -43,13 +44,6 @@ const isMetaState = (value: unknown): value is MetaState => {
   );
 };
 
-const resolveNumericLevel = (value: unknown): number => {
-  if (typeof value !== 'number' || !Number.isFinite(value)) {
-    return 0;
-  }
-  return value;
-};
-
 const normalizeMetaState = (meta: MetaState): { normalized: MetaState; removedLegacy: boolean } => {
   const talentLevels = { ...meta.talentLevels };
   let removedLegacy = false;
@@ -59,13 +53,8 @@ const normalizeMetaState = (meta: MetaState): { normalized: MetaState; removedLe
       return;
     }
 
-    const oldLevel = resolveNumericLevel(talentLevels[oldId]);
-    const currentNewValue = talentLevels[newId];
-    const newLevel = resolveNumericLevel(currentNewValue);
-    const mergedLevel = Math.max(oldLevel, newLevel);
-    if (newLevel !== mergedLevel || typeof currentNewValue !== 'number' || !Number.isFinite(currentNewValue)) {
-      talentLevels[newId] = mergedLevel;
-    }
+    // Policy: any talent migration resets the target level to 0.
+    talentLevels[newId] = 0;
     delete talentLevels[oldId];
     removedLegacy = true;
   });

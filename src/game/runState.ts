@@ -1,9 +1,10 @@
 import { resolveRunStats } from './effects/engine';
 import { resolveBoundary } from './boundary';
 import { consumeEntityAtPoint, ensureOrbSpawn, tickSpawns } from './spawnSystem';
+import { getPickupDefinitionById, type TimedEffectActivation } from './pickupCatalog';
 import type { DeathReason, Direction, GridSize, Point, RunState } from './types';
 
-type ScoreGainSource = 'orb' | 'passive_income';
+type ScoreGainSource = 'orb' | 'passive_income' | 'pickup';
 
 const isOppositeDirection = (a: Direction, b: Direction): boolean =>
   (a === 'up' && b === 'down') ||
@@ -64,6 +65,7 @@ const resolveSourceMultiplier = (state: RunState, source: ScoreGainSource): numb
     case 'orb':
       return state.stats.orbPointsMultiplier;
     case 'passive_income':
+    case 'pickup':
       return 1;
     default:
       return 1;
@@ -91,6 +93,39 @@ const applyPassiveIncome = (state: RunState, elapsedMs: number): void => {
   }
 };
 
+const pruneExpiredTimedEffects = (state: RunState, nowMs: number): void => {
+  state.activeTimedEffects = state.activeTimedEffects.filter((effect) => effect.expiresAtMs > nowMs);
+};
+
+const applyTimedEffectActivation = (state: RunState, activation: TimedEffectActivation, nowMs: number): void => {
+  const nextExpiresAtMs = nowMs + activation.durationMs;
+  const existingEffect = state.activeTimedEffects.find((effect) => effect.id === activation.id) ?? null;
+  if (!existingEffect) {
+    state.activeTimedEffects.push({
+      id: activation.id,
+      expiresAtMs: nextExpiresAtMs,
+      statModifiers: activation.statModifiers,
+    });
+    return;
+  }
+
+  if (activation.refreshPolicy === 'reset_duration') {
+    existingEffect.expiresAtMs = nextExpiresAtMs;
+    existingEffect.statModifiers = activation.statModifiers;
+  }
+};
+
+export const getCurrentVisionRadius = (state: RunState, nowMs: number): number => {
+  const timedVisionDelta = state.activeTimedEffects.reduce((total, effect) => {
+    if (effect.expiresAtMs <= nowMs) {
+      return total;
+    }
+    return total + (effect.statModifiers.visionRadiusDelta ?? 0);
+  }, 0);
+
+  return Math.max(0, state.stats.baseVisionRadius + timedVisionDelta);
+};
+
 export const createInitialRunState = (
   grid: GridSize,
   activeEffectIds: string[],
@@ -115,6 +150,8 @@ export const createInitialRunState = (
     endedAtMs: null,
     deathReason: null,
     passiveIncomeAccumulatorMs: 0,
+    pickupSpawnAccumulatorMs: 0,
+    activeTimedEffects: [],
     pointsFractionRemainder: 0,
     runCommitted: false,
   };
@@ -139,6 +176,7 @@ export const stepRun = (state: RunState, grid: GridSize, nowMs: number, deltaMs:
   }
 
   const elapsedMs = Math.max(0, Math.min(deltaMs, state.remainingMs));
+  pruneExpiredTimedEffects(state, nowMs);
   applyPassiveIncome(state, elapsedMs);
 
   state.remainingMs -= deltaMs;
@@ -148,7 +186,7 @@ export const stepRun = (state: RunState, grid: GridSize, nowMs: number, deltaMs:
     return;
   }
 
-  tickSpawns(state, grid, nowMs);
+  tickSpawns(state, grid, nowMs, elapsedMs);
 
   if (!isOppositeDirection(state.direction, state.pendingDirection)) {
     state.direction = state.pendingDirection;
@@ -191,6 +229,19 @@ export const stepRun = (state: RunState, grid: GridSize, nowMs: number, deltaMs:
       state.orbRespawnAtMs = nowMs + state.stats.orbRespawnDelayMs;
       ensureOrbSpawn(state, grid, nowMs);
       break;
+    case 'pickup': {
+      const pickupDefinition = getPickupDefinitionById(consumed.pickupTypeId);
+      if (!pickupDefinition) {
+        break;
+      }
+
+      const collectResult = pickupDefinition.onCollect(state, nowMs);
+      if (collectResult.points > 0) {
+        applyPointsGain(state, 'pickup', collectResult.points);
+      }
+      collectResult.timedEffects.forEach((activation) => applyTimedEffectActivation(state, activation, nowMs));
+      break;
+    }
     default:
       break;
   }

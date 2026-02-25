@@ -15,6 +15,7 @@ export const createBaseRunStats = (): RunStats => ({
   tickMs: 120,
   boundaryMode: 'wall-kill',
   orbRespawnDelayMs: 0,
+  pickupSpawnChancePerSecond: {},
 });
 
 export const EFFECT_DEFINITIONS: Record<string, EffectDefinition> = {
@@ -76,6 +77,41 @@ export const EFFECT_DEFINITIONS: Record<string, EffectDefinition> = {
     id: 'passive_income_lvl5',
     apply: (stats) => {
       stats.passiveIncomePointsPerSecond += 1;
+    },
+  },
+  vision_bonus_orb_lvl1: {
+    id: 'vision_bonus_orb_lvl1',
+    apply: (stats) => {
+      stats.pickupSpawnChancePerSecond.vision_clarity_orb =
+        (stats.pickupSpawnChancePerSecond.vision_clarity_orb ?? 0) + 0.03;
+    },
+  },
+  vision_bonus_orb_lvl2: {
+    id: 'vision_bonus_orb_lvl2',
+    apply: (stats) => {
+      stats.pickupSpawnChancePerSecond.vision_clarity_orb =
+        (stats.pickupSpawnChancePerSecond.vision_clarity_orb ?? 0) + 0.03;
+    },
+  },
+  vision_bonus_orb_lvl3: {
+    id: 'vision_bonus_orb_lvl3',
+    apply: (stats) => {
+      stats.pickupSpawnChancePerSecond.vision_clarity_orb =
+        (stats.pickupSpawnChancePerSecond.vision_clarity_orb ?? 0) + 0.03;
+    },
+  },
+  vision_bonus_orb_lvl4: {
+    id: 'vision_bonus_orb_lvl4',
+    apply: (stats) => {
+      stats.pickupSpawnChancePerSecond.vision_clarity_orb =
+        (stats.pickupSpawnChancePerSecond.vision_clarity_orb ?? 0) + 0.03;
+    },
+  },
+  vision_bonus_orb_lvl5: {
+    id: 'vision_bonus_orb_lvl5',
+    apply: (stats) => {
+      stats.pickupSpawnChancePerSecond.vision_clarity_orb =
+        (stats.pickupSpawnChancePerSecond.vision_clarity_orb ?? 0) + 0.03;
     },
   },
 };

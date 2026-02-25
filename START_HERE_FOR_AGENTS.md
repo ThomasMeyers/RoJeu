@@ -17,8 +17,11 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - `talent`: upgrade definition from catalog with level/cost rules.
 - `store`: end-of-run overlay used to inspect and upgrade talents.
 - `orb`: target entity collected repeatedly during a run.
+- `pickup`: non-orb entity with dedicated spawn rules and on-collect behavior.
 - `orb_yield`: active gameplay talent; each level adds +10% to orb score gain.
 - `passive_income`: active gameplay talent; each level adds +1 point/s while the run is active.
+- `vision_bonus_orb`: talent that unlocks `vision_clarity_orb` pickup spawns (+3% chance/level/sec).
+- `vision_clarity_orb`: white pickup, no points, applies a temporary vision boost.
 
 ## Naming Convention
 
@@ -30,6 +33,7 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 
 - Run timer, collisions, start/stop phases -> `src/game/runState.ts`, `src/game/types.ts`
 - Spawn behavior, orb appearance -> `src/game/spawnSystem.ts`
+- Pickup definitions, on-collect effects -> `src/game/pickupCatalog.ts`
 - Fog of war / vision radius -> `src/game/visibility.ts`, `src/scenes/GameScene.ts`
 - Store cards, popup, click behavior -> `src/scenes/GameScene.ts`, `src/game/metaState.ts`
 - Talent definitions, availability, costs -> `src/game/talentCatalog.ts`
@@ -41,6 +45,11 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - Keep `runCommitted` semantics intact: run points should be committed once when run ends.
 - Visibility must hide entities outside vision radius both in logic and render path.
 - Keep store UI-only changes separate from gameplay effect activation unless explicitly requested.
+- Pickup spawn caps are per pickup type (not global across all pickups).
+
+## Migration Policy TODO
+
+- TODO: At each talent migration (replacement/rename), reset target talent level to 0 by default.
 
 ## Quick Validation Before Handoff
 

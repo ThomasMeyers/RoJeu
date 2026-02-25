@@ -71,6 +71,7 @@ Use these task-driven playbooks to avoid wide exploration.
 - `src/game/talentCatalog.ts`
 - `src/game/effects/schema.ts`
 - `src/game/effects/engine.ts`
+- `src/game/pickupCatalog.ts` (if the talent spawns pickups or applies timed effects)
 - `src/game/runState.ts` (only if effect needs explicit runtime hook)
 
 ### Typical steps
@@ -79,10 +80,10 @@ Use these task-driven playbooks to avoid wide exploration.
 2. Reference effect ID in `talentCatalog.ts` level mapping.
 3. Confirm run stat resolution reflects effect.
 4. If dynamic behavior is needed, add minimal hook in `runState.ts`.
-5. Run `npm run build` and perform one manual run check.
+5. If the effect introduces pickups/buffs, define collect/spawn rules in `pickupCatalog.ts`.
+6. Run `npm run build` and perform one manual run check.
 
 ### Gotchas
 
 - Prefer declarative stat effects before runtime branching.
 - Keep backwards compatibility for old saved `metaState`.
-

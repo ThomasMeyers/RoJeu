@@ -15,13 +15,35 @@ export interface GridSize {
   rows: number;
 }
 
-export type EntityKind = 'orb';
+export type PickupTypeId = 'vision_clarity_orb';
 
-export interface SpawnEntity {
+export type EntityKind = 'orb' | 'pickup';
+
+export interface OrbSpawnEntity {
   id: string;
-  kind: EntityKind;
+  kind: 'orb';
   position: Point;
   expiresAtMs: number | null;
+}
+
+export interface PickupSpawnEntity {
+  id: string;
+  kind: 'pickup';
+  pickupTypeId: PickupTypeId;
+  position: Point;
+  expiresAtMs: number | null;
+}
+
+export type SpawnEntity = OrbSpawnEntity | PickupSpawnEntity;
+
+export interface TimedEffectStatModifiers {
+  visionRadiusDelta?: number;
+}
+
+export interface ActiveTimedEffect {
+  id: string;
+  expiresAtMs: number;
+  statModifiers: TimedEffectStatModifiers;
 }
 
 export interface RunStats {
@@ -34,6 +56,7 @@ export interface RunStats {
   tickMs: number;
   boundaryMode: BoundaryMode;
   orbRespawnDelayMs: number;
+  pickupSpawnChancePerSecond: Partial<Record<PickupTypeId, number>>;
 }
 
 export interface MetaState {
@@ -59,6 +82,8 @@ export interface RunState {
   endedAtMs: number | null;
   deathReason: DeathReason | null;
   passiveIncomeAccumulatorMs: number;
+  pickupSpawnAccumulatorMs: number;
+  activeTimedEffects: ActiveTimedEffect[];
   pointsFractionRemainder: number;
   runCommitted: boolean;
 }

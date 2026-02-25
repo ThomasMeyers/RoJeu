@@ -1,8 +1,9 @@
-import type { GridSize, Point, RunState } from './types';
+import type { GridSize, PickupTypeId, Point, RunState } from './types';
+import { getPickupDefinitions } from './pickupCatalog';
 
 const pointKey = (point: Point): string => `${point.x},${point.y}`;
 
-const randomFreePoint = (grid: GridSize, blocked: Point[]): Point => {
+const randomFreePoint = (grid: GridSize, blocked: Point[]): Point | null => {
   const blockedSet = new Set(blocked.map(pointKey));
   const freePoints: Point[] = [];
 
@@ -15,8 +16,12 @@ const randomFreePoint = (grid: GridSize, blocked: Point[]): Point => {
     }
   }
 
+  if (freePoints.length === 0) {
+    return null;
+  }
+
   const index = Math.floor(Math.random() * freePoints.length);
-  return freePoints[Math.max(0, index)] ?? { x: 0, y: 0 };
+  return freePoints[Math.max(0, index)] ?? null;
 };
 
 const nextEntityId = (): string =>
@@ -43,15 +48,63 @@ export const ensureOrbSpawn = (state: RunState, grid: GridSize, nowMs: number): 
   }
 
   const blocked = [...state.slug, ...state.entities.map((entity) => entity.position)];
+  const spawnPoint = randomFreePoint(grid, blocked);
+  if (!spawnPoint) {
+    return;
+  }
   state.entities.push({
     id: nextEntityId(),
     kind: 'orb',
-    position: randomFreePoint(grid, blocked),
+    position: spawnPoint,
     expiresAtMs: null,
   });
   state.orbRespawnAtMs = null;
 };
 
-export const tickSpawns = (state: RunState, grid: GridSize, nowMs: number): void => {
+const countPickupEntities = (state: RunState, pickupTypeId: PickupTypeId): number =>
+  state.entities.filter((entity) => entity.kind === 'pickup' && entity.pickupTypeId === pickupTypeId).length;
+
+const tickPickupSpawns = (state: RunState, grid: GridSize, elapsedMs: number): void => {
+  if (elapsedMs <= 0) {
+    return;
+  }
+
+  state.pickupSpawnAccumulatorMs += elapsedMs;
+  while (state.pickupSpawnAccumulatorMs >= 1000) {
+    state.pickupSpawnAccumulatorMs -= 1000;
+
+    getPickupDefinitions().forEach((pickup) => {
+      const spawnChance = Math.max(0, Math.min(1, pickup.getSpawnChancePerSecond(state)));
+      if (spawnChance <= 0) {
+        return;
+      }
+
+      if (countPickupEntities(state, pickup.id) >= pickup.maxConcurrent) {
+        return;
+      }
+
+      if (Math.random() >= spawnChance) {
+        return;
+      }
+
+      const blocked = [...state.slug, ...state.entities.map((entity) => entity.position)];
+      const spawnPoint = randomFreePoint(grid, blocked);
+      if (!spawnPoint) {
+        return;
+      }
+
+      state.entities.push({
+        id: nextEntityId(),
+        kind: 'pickup',
+        pickupTypeId: pickup.id,
+        position: spawnPoint,
+        expiresAtMs: null,
+      });
+    });
+  }
+};
+
+export const tickSpawns = (state: RunState, grid: GridSize, nowMs: number, elapsedMs: number): void => {
   ensureOrbSpawn(state, grid, nowMs);
+  tickPickupSpawns(state, grid, elapsedMs);
 };

@@ -57,14 +57,14 @@ Projet perso de mini-jeu web inspiré de Snake, avec une direction visuelle "lim
 - HUD compacte avec priorite lecture: points run/total, vies, temps restant.
 - Ecran de fin retravaille: titre, sous-texte contextuel, stats, CTA lisibles.
 
-## Store v1 (UI-only talents)
+## Store v1 (talents progressifs)
 - Ouverture du store depuis l'ecran de fin via `Ameliorer la limace`.
-- 3 talents placeholders affiches (uniquement les talents disponibles).
+- 3 talents disponibles affiches.
 - Format carte: image placeholder + titre + `(niveau/max)` + cout du prochain niveau.
 - Popup detail: header (image + titre), description, croix de fermeture, bouton `Ameliorer pour Xp.`.
 - Achat: depense des `totalPoints` persistants en `localStorage`.
 - Au niveau max: talent conserve visible avec etat `MAX` et bouton d'upgrade bloque.
-- Les effets gameplay des talents restent hors scope de cette version (implementation progressive ensuite).
+- Les effets gameplay sont appliques via `effectIdsByLevel` (score passif, multiplicateurs, spawn de pickups).
 
 ## Backlog UI futur
 - Ecran principal de lancement avant la pre-run.

@@ -6,8 +6,9 @@ import {
   saveMetaState,
   upgradeTalentLevel,
 } from '../game/metaState';
-import { createInitialRunState, queueDirection, stepRun } from '../game/runState';
+import { createInitialRunState, getCurrentVisionRadius, queueDirection, stepRun } from '../game/runState';
 import { ensureOrbSpawn } from '../game/spawnSystem';
+import { getPickupDefinitionById } from '../game/pickupCatalog';
 import type { Direction, GridSize, MetaState, RunState } from '../game/types';
 import { isVisibleFromHead } from '../game/visibility';
 
@@ -717,7 +718,7 @@ export class GameScene extends Phaser.Scene {
 
   private drawEntities() {
     const head = this.runState.slug[0];
-    const radius = this.runState.stats.baseVisionRadius;
+    const radius = getCurrentVisionRadius(this.runState, this.time.now);
 
     this.runState.entities.forEach((entity) => {
       if (!isVisibleFromHead(entity.position, head, radius)) {
@@ -732,6 +733,12 @@ export class GameScene extends Phaser.Scene {
           this.graphics.fillStyle(0xffd35f, 1);
           this.graphics.fillCircle(x, y, CELL_SIZE * 0.38);
           break;
+        case 'pickup': {
+          const pickupDefinition = getPickupDefinitionById(entity.pickupTypeId);
+          this.graphics.fillStyle(pickupDefinition?.color ?? 0xffffff, 1);
+          this.graphics.fillCircle(x, y, CELL_SIZE * 0.34);
+          break;
+        }
         default:
           break;
       }
@@ -751,7 +758,7 @@ export class GameScene extends Phaser.Scene {
 
   private drawFog() {
     const head = this.runState.slug[0];
-    const radius = this.runState.stats.baseVisionRadius;
+    const radius = getCurrentVisionRadius(this.runState, this.time.now);
 
     this.graphics.fillStyle(0x05070c, 1);
     for (let y = 0; y < GRID.rows; y += 1) {
@@ -771,11 +778,12 @@ export class GameScene extends Phaser.Scene {
 
   private drawHud() {
     const timeLeft = Math.ceil(this.runState.remainingMs / 1000);
+    const currentVisionRadius = getCurrentVisionRadius(this.runState, this.time.now);
     this.scoreText.setText(
       `Run: ${this.runState.score} pts   |   Total: ${this.meta.totalPoints} pts   |   Vies: ${this.runState.lives}`,
     );
     this.runInfoText.setText(
-      `Temps restant: ${timeLeft}s   |   Vision: ${this.runState.stats.baseVisionRadius}   |   Bord: ${this.runState.boundaryMode}`,
+      `Temps restant: ${timeLeft}s   |   Vision: ${currentVisionRadius}   |   Bord: ${this.runState.boundaryMode}`,
     );
 
     if (this.runState.phase === 'waiting_start') {
