@@ -114,4 +114,10 @@ export const EFFECT_DEFINITIONS: Record<string, EffectDefinition> = {
         (stats.pickupSpawnChancePerSecond.vision_clarity_orb ?? 0) + 0.03;
     },
   },
+  no_walls_lvl1: {
+    id: 'no_walls_lvl1',
+    apply: (stats) => {
+      stats.boundaryMode = 'wrap-around';
+    },
+  },
 };

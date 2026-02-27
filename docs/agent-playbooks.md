@@ -54,9 +54,9 @@ Use these task-driven playbooks to avoid wide exploration.
 
 ### Typical steps
 
-1. Add catalog entry with `id/title/description/imageToken/maxLevel/costsByLevel/isAvailable`.
+1. Add catalog entry with `id/title/description/imageToken/maxLevel/costsByLevel/isAvailable/unlockRule/storeRow/storeOrder`.
 2. Ensure `effectIdsByLevel` is present even if empty placeholders.
-3. Validate card visibility rules (`isAvailable`) and max behavior (`MAX`).
+3. Validate unlock behavior (`unlockRule`) and max behavior (`MAX`).
 4. Run `npm run build`.
 
 ### Gotchas
@@ -86,4 +86,4 @@ Use these task-driven playbooks to avoid wide exploration.
 ### Gotchas
 
 - Prefer declarative stat effects before runtime branching.
-- Keep backwards compatibility for old saved `metaState`.
+- Save compatibility is optional in this single-user project unless explicitly requested.

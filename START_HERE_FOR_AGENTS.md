@@ -21,13 +21,14 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - `orb_yield`: active gameplay talent; each level adds +10% to orb score gain.
 - `passive_income`: active gameplay talent; each level adds +1 point/s while the run is active.
 - `vision_bonus_orb`: talent that unlocks `vision_clarity_orb` pickup spawns (+3% chance/level/sec).
+- `no_walls`: talent that switches boundary mode to `wrap-around` (no wall deaths).
 - `vision_clarity_orb`: white pickup, no points, applies a temporary vision boost.
 
 ## Naming Convention
 
 - Keep technical IDs stable and descriptive (`talent.id`, effect IDs, stat keys), independent from UI copy.
 - UI labels/descriptions can be humorous and can change without forcing code-level renames.
-- Any ID rename must include save normalization/migration in `src/game/metaState.ts`.
+- During the current single-user phase, save continuity is optional; schema changes can reset storage when needed.
 
 ## If Request Mentions X, Open Y
 
@@ -47,9 +48,9 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - Keep store UI-only changes separate from gameplay effect activation unless explicitly requested.
 - Pickup spawn caps are per pickup type (not global across all pickups).
 
-## Migration Policy TODO
+## Storage Policy TODO
 
-- TODO: At each talent migration (replacement/rename), reset target talent level to 0 by default.
+- TODO: Keep `snake-meta` simple; if save schema changes again, prefer a clean reset over legacy migration code unless continuity is explicitly requested.
 
 ## Quick Validation Before Handoff
 

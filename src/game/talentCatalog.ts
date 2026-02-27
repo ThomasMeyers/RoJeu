@@ -1,3 +1,16 @@
+export interface TalentUnlockRequirement {
+  talentId: string;
+  minLevel: number;
+}
+
+export type TalentUnlockRule =
+  | { type: 'always' }
+  | {
+      type: 'requires_talents_all';
+      requirements: TalentUnlockRequirement[];
+      requirementText: string;
+    };
+
 export interface TalentCatalogEntry {
   id: string;
   title: string;
@@ -7,6 +20,9 @@ export interface TalentCatalogEntry {
   costsByLevel: number[];
   isAvailable: boolean;
   effectIdsByLevel: string[];
+  unlockRule: TalentUnlockRule;
+  storeRow: number;
+  storeOrder: number;
 }
 
 export const TALENT_CATALOG: TalentCatalogEntry[] = [
@@ -25,6 +41,9 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
       'orb_yield_lvl4',
       'orb_yield_lvl5',
     ],
+    unlockRule: { type: 'always' },
+    storeRow: 1,
+    storeOrder: 1,
   },
   {
     id: 'passive_income',
@@ -42,6 +61,9 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
       'passive_income_lvl4',
       'passive_income_lvl5',
     ],
+    unlockRule: { type: 'always' },
+    storeRow: 1,
+    storeOrder: 2,
   },
   {
     id: 'vision_bonus_orb',
@@ -58,6 +80,31 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
       'vision_bonus_orb_lvl4',
       'vision_bonus_orb_lvl5',
     ],
+    unlockRule: { type: 'always' },
+    storeRow: 1,
+    storeOrder: 3,
+  },
+  {
+    id: 'no_walls',
+    title: 'around the world',
+    description:
+      'Around the world around the world. Around the world around the world. Around the world ? Around the world !',
+    imageToken: 'ATW',
+    maxLevel: 1,
+    costsByLevel: [5000],
+    isAvailable: true,
+    effectIdsByLevel: ['no_walls_lvl1'],
+    unlockRule: {
+      type: 'requires_talents_all',
+      requirements: [
+        { talentId: 'orb_yield', minLevel: 5 },
+        { talentId: 'passive_income', minLevel: 5 },
+        { talentId: 'vision_bonus_orb', minLevel: 5 },
+      ],
+      requirementText: 'Maxer les 3 talents de la premiere ligne.',
+    },
+    storeRow: 2,
+    storeOrder: 1,
   },
   {
     id: 'prototype_slot_a',
@@ -68,6 +115,9 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     costsByLevel: [250, 400, 600, 900, 1300],
     isAvailable: false,
     effectIdsByLevel: ['', '', '', '', ''],
+    unlockRule: { type: 'always' },
+    storeRow: 3,
+    storeOrder: 1,
   },
   {
     id: 'prototype_slot_b',
@@ -78,5 +128,8 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     costsByLevel: [250, 400, 600, 900, 1300],
     isAvailable: false,
     effectIdsByLevel: ['', '', '', '', ''],
+    unlockRule: { type: 'always' },
+    storeRow: 3,
+    storeOrder: 2,
   },
 ];

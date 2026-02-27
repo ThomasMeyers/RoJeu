@@ -1,16 +1,7 @@
 import type { MetaState } from './types';
-import { TALENT_CATALOG, type TalentCatalogEntry } from './talentCatalog';
+import { TALENT_CATALOG, type TalentCatalogEntry, type TalentUnlockRule } from './talentCatalog';
 
-const STORAGE_KEY = 'snake-meta-v1';
-const LEGACY_TALENT_IDS = ['casque', 'headlamp'] as const;
-const TALENT_ID_MIGRATIONS: Record<string, string> = {
-  bave_baveuse: 'orb_yield',
-  placeholder_lampe: 'passive_income',
-  around_the_world: 'vision_bonus_orb',
-  boundary_wrap: 'vision_bonus_orb',
-  be_like_momo: 'prototype_slot_a',
-  heures_supplementaires: 'prototype_slot_b',
-};
+const STORAGE_KEY = 'snake-meta';
 
 export interface TalentStoreItem {
   id: string;
@@ -22,6 +13,10 @@ export interface TalentStoreItem {
   nextCost: number | null;
   isMaxed: boolean;
   canUpgrade: boolean;
+  isUnlocked: boolean;
+  unlockRequirementText: string | null;
+  storeRow: number;
+  storeOrder: number;
 }
 
 export const createDefaultMetaState = (): MetaState => ({
@@ -44,42 +39,6 @@ const isMetaState = (value: unknown): value is MetaState => {
   );
 };
 
-const normalizeMetaState = (meta: MetaState): { normalized: MetaState; removedLegacy: boolean } => {
-  const talentLevels = { ...meta.talentLevels };
-  let removedLegacy = false;
-
-  Object.entries(TALENT_ID_MIGRATIONS).forEach(([oldId, newId]) => {
-    if (!Object.prototype.hasOwnProperty.call(talentLevels, oldId)) {
-      return;
-    }
-
-    // Policy: any talent migration resets the target level to 0.
-    talentLevels[newId] = 0;
-    delete talentLevels[oldId];
-    removedLegacy = true;
-  });
-
-  LEGACY_TALENT_IDS.forEach((legacyId) => {
-    if (!Object.prototype.hasOwnProperty.call(talentLevels, legacyId)) {
-      return;
-    }
-    delete talentLevels[legacyId];
-    removedLegacy = true;
-  });
-
-  if (!removedLegacy) {
-    return { normalized: meta, removedLegacy: false };
-  }
-
-  return {
-    normalized: {
-      ...meta,
-      talentLevels,
-    },
-    removedLegacy: true,
-  };
-};
-
 export const loadMetaState = (): MetaState => {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -92,11 +51,7 @@ export const loadMetaState = (): MetaState => {
       return createDefaultMetaState();
     }
 
-    const { normalized, removedLegacy } = normalizeMetaState(parsed);
-    if (removedLegacy) {
-      saveMetaState(normalized);
-    }
-    return normalized;
+    return parsed;
   } catch {
     return createDefaultMetaState();
   }
@@ -111,11 +66,49 @@ const clampTalentLevel = (meta: MetaState, talent: TalentCatalogEntry): number =
   return Math.max(0, Math.min(rawLevel, talent.maxLevel));
 };
 
+const getTalentLevelById = (meta: MetaState, talentId: string): number => {
+  const talent = TALENT_CATALOG.find((entry) => entry.id === talentId) ?? null;
+  if (!talent) {
+    return 0;
+  }
+  return clampTalentLevel(meta, talent);
+};
+
+const resolveUnlockRequirementText = (unlockRule: TalentUnlockRule): string | null => {
+  if (unlockRule.type === 'always') {
+    return null;
+  }
+  return unlockRule.requirementText;
+};
+
+const isUnlockRuleSatisfied = (meta: MetaState, unlockRule: TalentUnlockRule): boolean => {
+  switch (unlockRule.type) {
+    case 'always':
+      return true;
+    case 'requires_talents_all':
+      return unlockRule.requirements.every(
+        (requirement) => getTalentLevelById(meta, requirement.talentId) >= requirement.minLevel,
+      );
+    default:
+      return true;
+  }
+};
+
 export const getTalentById = (talentId: string): TalentCatalogEntry | null =>
   TALENT_CATALOG.find((talent) => talent.id === talentId) ?? null;
 
 export const getAvailableTalentCatalog = (): TalentCatalogEntry[] =>
-  TALENT_CATALOG.filter((talent) => talent.isAvailable);
+  TALENT_CATALOG.filter((talent) => talent.isAvailable).sort(
+    (a, b) => a.storeRow - b.storeRow || a.storeOrder - b.storeOrder,
+  );
+
+export const isTalentUnlocked = (meta: MetaState, talentId: string): boolean => {
+  const talent = getTalentById(talentId);
+  if (!talent || !talent.isAvailable) {
+    return false;
+  }
+  return isUnlockRuleSatisfied(meta, talent.unlockRule);
+};
 
 export const getTalentNextCost = (meta: MetaState, talentId: string): number | null => {
   const talent = getTalentById(talentId);
@@ -131,7 +124,7 @@ export const getTalentNextCost = (meta: MetaState, talentId: string): number | n
 
 export const canUpgradeTalent = (meta: MetaState, talentId: string): boolean => {
   const talent = getTalentById(talentId);
-  if (!talent || !talent.isAvailable) {
+  if (!talent || !talent.isAvailable || !isTalentUnlocked(meta, talentId)) {
     return false;
   }
   const nextCost = getTalentNextCost(meta, talentId);
@@ -143,7 +136,7 @@ export const canUpgradeTalent = (meta: MetaState, talentId: string): boolean => 
 
 export const upgradeTalentLevel = (meta: MetaState, talentId: string): boolean => {
   const talent = getTalentById(talentId);
-  if (!talent || !talent.isAvailable) {
+  if (!talent || !talent.isAvailable || !isTalentUnlocked(meta, talentId)) {
     return false;
   }
   const nextCost = getTalentNextCost(meta, talentId);
@@ -162,6 +155,9 @@ export const getStoreTalentItems = (meta: MetaState): TalentStoreItem[] =>
     const level = clampTalentLevel(meta, talent);
     const nextCost = getTalentNextCost(meta, talent.id);
     const isMaxed = level >= talent.maxLevel;
+    const isUnlocked = isUnlockRuleSatisfied(meta, talent.unlockRule);
+    const unlockRequirementText = resolveUnlockRequirementText(talent.unlockRule);
+
     return {
       id: talent.id,
       title: talent.title,
@@ -171,7 +167,11 @@ export const getStoreTalentItems = (meta: MetaState): TalentStoreItem[] =>
       maxLevel: talent.maxLevel,
       nextCost,
       isMaxed,
-      canUpgrade: !isMaxed && nextCost !== null && meta.totalPoints >= nextCost,
+      canUpgrade: isUnlocked && !isMaxed && nextCost !== null && meta.totalPoints >= nextCost,
+      isUnlocked,
+      unlockRequirementText,
+      storeRow: talent.storeRow,
+      storeOrder: talent.storeOrder,
     };
   });
 

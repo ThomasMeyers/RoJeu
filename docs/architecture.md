@@ -19,11 +19,11 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
 - `src/game/visibility.ts`
   - Visibility utility used for fog and hidden entities.
 - `src/game/metaState.ts`
-  - Persistent progression lifecycle (`load`, `save`, upgrade checks, store item view models).
+  - Persistent progression lifecycle (`load`, `save`, unlock checks, upgrade checks, store item view models).
 - `src/game/talentCatalog.ts`
-  - Declarative talent catalog (title/description/levels/costs/availability/effect IDs by level).
+  - Declarative talent catalog (title/description/levels/costs/availability/effect IDs/unlock rules/store row ordering).
 - `src/game/effects/schema.ts` + `src/game/effects/engine.ts`
-  - Run stat modifier schema and effect aggregation pipeline (`orb_yield` boosts `orbPointsMultiplier`, `passive_income` boosts `passiveIncomePointsPerSecond`, `vision_bonus_orb` boosts pickup spawn chance).
+  - Run stat modifier schema and effect aggregation pipeline (`orb_yield` boosts `orbPointsMultiplier`, `passive_income` boosts `passiveIncomePointsPerSecond`, `vision_bonus_orb` boosts pickup spawn chance, `no_walls` sets `boundaryMode` to `wrap-around`).
 - `src/scenes/GameScene.ts`
   - Phaser scene wiring: render loop, HUD/end/store overlays, input wiring, run/meta coordination.
 
@@ -68,6 +68,6 @@ flowchart TD
 ## Extension Points
 
 - Add gameplay effect: define in `effects/schema.ts`, bind via `talentCatalog.ts`.
-- Add talent UI behavior: `metaState.ts` for rule checks + `GameScene.ts` for presentation/interactions.
+- Add talent UI behavior: `metaState.ts` for unlock/upgrade rule checks + `GameScene.ts` for presentation/interactions.
 - Add pickup: declare in `pickupCatalog.ts`, wire chance via `effects/schema.ts`, render via `GameScene.ts`.
 - Add entities: extend `EntityKind` in `types.ts`, spawn logic in `spawnSystem.ts`, render path in `GameScene.ts`.

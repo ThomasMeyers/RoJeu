@@ -59,12 +59,13 @@ Projet perso de mini-jeu web inspiré de Snake, avec une direction visuelle "lim
 
 ## Store v1 (talents progressifs)
 - Ouverture du store depuis l'ecran de fin via `Ameliorer la limace`.
-- 3 talents disponibles affiches.
-- Format carte: image placeholder + titre + `(niveau/max)` + cout du prochain niveau.
-- Popup detail: header (image + titre), description, croix de fermeture, bouton `Ameliorer pour Xp.`.
+- Layout en 2 lignes: 3 talents de base en ligne 1 + 1 talent centre en ligne 2.
+- Le talent `around the world` (ID `no_walls`) est visible mais verrouille tant que les 3 talents de la ligne 1 ne sont pas maxes.
+- Format carte: image placeholder + titre + `(niveau/max)` + cout du prochain niveau; en etat verrouille: carte grisee + `LOCK` + prerequis.
+- Popup detail unique: header (image + titre), description, croix de fermeture, footer dynamique (achat ou prerequis de debloquage).
 - Achat: depense des `totalPoints` persistants en `localStorage`.
 - Au niveau max: talent conserve visible avec etat `MAX` et bouton d'upgrade bloque.
-- Les effets gameplay sont appliques via `effectIdsByLevel` (score passif, multiplicateurs, spawn de pickups).
+- Les effets gameplay sont appliques via `effectIdsByLevel` (score passif, multiplicateurs, spawn de pickups, suppression permanente des murs avec `no_walls`).
 
 ## Backlog UI futur
 - Ecran principal de lancement avant la pre-run.

@@ -31,6 +31,9 @@ const STORE_CARD_BG = 0x1b2233;
 const STORE_CARD_BORDER = 0x364563;
 const STORE_CARD_IMAGE_BG = 0x2b3856;
 const STORE_POPUP_BG = 0x0f1523;
+const STORE_CARD_LOCKED_BG = 0x121621;
+const STORE_CARD_LOCKED_BORDER = 0x2a3144;
+const STORE_CARD_LOCKED_IMAGE_BG = 0x1c2538;
 
 interface StoreCardUi {
   talentId: string;
@@ -38,6 +41,8 @@ interface StoreCardUi {
   imageBg: Phaser.GameObjects.Rectangle;
   imageText: Phaser.GameObjects.Text;
   titleText: Phaser.GameObjects.Text;
+  lockText: Phaser.GameObjects.Text;
+  requirementText: Phaser.GameObjects.Text;
   costText: Phaser.GameObjects.Text;
 }
 
@@ -335,11 +340,19 @@ export class GameScene extends Phaser.Scene {
     const centerY = BOARD_OFFSET_Y + BOARD_HEIGHT / 2;
     const storeItems = getStoreTalentItems(this.meta);
     const cardWidth = 142;
-    const cardHeight = 198;
+    const cardHeight = 162;
     const cardGap = 12;
-    const rowWidth = storeItems.length * cardWidth + Math.max(0, storeItems.length - 1) * cardGap;
-    const startX = centerX - rowWidth / 2 + cardWidth / 2;
-    const cardY = centerY + 10;
+    const rowGap = 14;
+    const rows = Array.from(new Set(storeItems.map((item) => item.storeRow))).sort((a, b) => a - b);
+    const rowItemsMap = new Map<number, typeof storeItems>();
+    storeItems.forEach((item) => {
+      const entries = rowItemsMap.get(item.storeRow) ?? [];
+      entries.push(item);
+      rowItemsMap.set(item.storeRow, entries);
+    });
+    rowItemsMap.forEach((items) => items.sort((a, b) => a.storeOrder - b.storeOrder));
+    const totalRowsHeight = rows.length * cardHeight + Math.max(0, rows.length - 1) * rowGap;
+    const firstRowCenterY = centerY - totalRowsHeight / 2 + cardHeight / 2 + 6;
 
     this.storeOverlayBg = this.add
       .rectangle(centerX, centerY, BOARD_WIDTH, BOARD_HEIGHT, STORE_OVERLAY_BG, 0.96)
@@ -386,65 +399,105 @@ export class GameScene extends Phaser.Scene {
       .setDepth(42)
       .setVisible(false);
 
-    this.storeCardUis = storeItems.map((item, index) => {
-      const cardCenterX = startX + index * (cardWidth + cardGap);
-      const bg = this.add
-        .rectangle(cardCenterX, cardY, cardWidth, cardHeight, STORE_CARD_BG, 1)
-        .setStrokeStyle(2, STORE_CARD_BORDER)
-        .setInteractive({ useHandCursor: true })
-        .setDepth(41)
-        .setVisible(false);
-      bg.on(
-        'pointerdown',
-        (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
-          event.stopPropagation();
-        if (this.selectedStoreTalentId) {
-          return;
-        }
-        this.openStoreTalentDetails(item.id);
-        },
-      );
+    this.storeCardUis = [];
+    rows.forEach((row, rowIndex) => {
+      const rowItems = rowItemsMap.get(row) ?? [];
+      const rowWidth = rowItems.length * cardWidth + Math.max(0, rowItems.length - 1) * cardGap;
+      const rowStartX = centerX - rowWidth / 2 + cardWidth / 2;
+      const cardY = firstRowCenterY + rowIndex * (cardHeight + rowGap);
 
-      const imageBg = this.add
-        .rectangle(cardCenterX, cardY - 48, 84, 84, STORE_CARD_IMAGE_BG, 1)
-        .setStrokeStyle(1, 0x6178ad)
-        .setDepth(42)
-        .setVisible(false);
+      rowItems.forEach((item, itemIndex) => {
+        const cardCenterX = rowStartX + itemIndex * (cardWidth + cardGap);
+        const bg = this.add
+          .rectangle(cardCenterX, cardY, cardWidth, cardHeight, STORE_CARD_BG, 1)
+          .setStrokeStyle(2, STORE_CARD_BORDER)
+          .setInteractive({ useHandCursor: true })
+          .setDepth(41)
+          .setVisible(false);
+        bg.on(
+          'pointerdown',
+          (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
+            event.stopPropagation();
+            if (this.selectedStoreTalentId) {
+              return;
+            }
+            this.openStoreTalentDetails(item.id);
+          },
+        );
 
-      const imageText = this.add
-        .text(cardCenterX, cardY - 48, item.imageToken, {
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '24px',
-          color: '#d9e5ff',
-        })
-        .setOrigin(0.5)
-        .setDepth(43)
-        .setVisible(false);
+        const imageBg = this.add
+          .rectangle(cardCenterX, cardY - 36, 72, 72, STORE_CARD_IMAGE_BG, 1)
+          .setStrokeStyle(1, 0x6178ad)
+          .setDepth(42)
+          .setVisible(false);
 
-      const titleText = this.add
-        .text(cardCenterX, cardY + 20, '', {
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '15px',
-          color: '#f3f6ff',
-          align: 'center',
-          wordWrap: { width: cardWidth - 16 },
-        })
-        .setOrigin(0.5)
-        .setDepth(42)
-        .setVisible(false);
+        const imageText = this.add
+          .text(cardCenterX, cardY - 36, item.imageToken, {
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '22px',
+            color: '#d9e5ff',
+          })
+          .setOrigin(0.5)
+          .setDepth(43)
+          .setVisible(false);
 
-      const costText = this.add
-        .text(cardCenterX, cardY + 76, '', {
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '17px',
-          color: '#ffd892',
-          align: 'center',
-        })
-        .setOrigin(0.5)
-        .setDepth(42)
-        .setVisible(false);
+        const titleText = this.add
+          .text(cardCenterX, cardY + 10, '', {
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '14px',
+            color: '#f3f6ff',
+            align: 'center',
+            wordWrap: { width: cardWidth - 16 },
+          })
+          .setOrigin(0.5)
+          .setDepth(42)
+          .setVisible(false);
 
-      return { talentId: item.id, bg, imageBg, imageText, titleText, costText };
+        const lockText = this.add
+          .text(cardCenterX, cardY + 36, 'LOCK', {
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '13px',
+            color: '#95a0ba',
+            align: 'center',
+          })
+          .setOrigin(0.5)
+          .setDepth(42)
+          .setVisible(false);
+
+        const requirementText = this.add
+          .text(cardCenterX, cardY + 56, '', {
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '11px',
+            color: '#8f9ab3',
+            align: 'center',
+            wordWrap: { width: cardWidth - 18 },
+          })
+          .setOrigin(0.5)
+          .setDepth(42)
+          .setVisible(false);
+
+        const costText = this.add
+          .text(cardCenterX, cardY + 58, '', {
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '16px',
+            color: '#ffd892',
+            align: 'center',
+          })
+          .setOrigin(0.5)
+          .setDepth(42)
+          .setVisible(false);
+
+        this.storeCardUis.push({
+          talentId: item.id,
+          bg,
+          imageBg,
+          imageText,
+          titleText,
+          lockText,
+          requirementText,
+          costText,
+        });
+      });
     });
 
     this.storePopupBg = this.add
@@ -508,7 +561,7 @@ export class GameScene extends Phaser.Scene {
       .setVisible(false);
 
     this.storePopupUpgradeBg = this.add
-      .rectangle(centerX, centerY + 86, 284, 50, BUTTON_PRIMARY, 1)
+      .rectangle(centerX, centerY + 88, 284, 64, BUTTON_PRIMARY, 1)
       .setStrokeStyle(2, 0x87a8ff)
       .setInteractive({ useHandCursor: true })
       .setDepth(46)
@@ -527,10 +580,12 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.storePopupUpgradeText = this.add
-      .text(centerX, centerY + 86, '', {
+      .text(centerX, centerY + 88, '', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '18px',
+        fontSize: '15px',
         color: '#ffffff',
+        align: 'center',
+        wordWrap: { width: 252 },
       })
       .setOrigin(0.5)
       .setDepth(47)
@@ -575,6 +630,8 @@ export class GameScene extends Phaser.Scene {
       card.imageBg.setVisible(visible);
       card.imageText.setVisible(visible);
       card.titleText.setVisible(visible);
+      card.lockText.setVisible(visible);
+      card.requirementText.setVisible(visible);
       card.costText.setVisible(visible);
     });
   }
@@ -607,20 +664,47 @@ export class GameScene extends Phaser.Scene {
         card.imageBg.setVisible(false);
         card.imageText.setVisible(false);
         card.titleText.setVisible(false);
+        card.lockText.setVisible(false);
+        card.requirementText.setVisible(false);
         card.costText.setVisible(false);
         return;
       }
+
       card.imageText.setText(item.imageToken);
-      card.titleText.setText(`${item.title} (${item.level}/${item.maxLevel})`);
-      if (item.isMaxed) {
-        card.costText.setText('MAX');
-        card.costText.setColor('#aeb8d1');
-      } else if (item.nextCost === null) {
-        card.costText.setText('---');
-        card.costText.setColor('#aeb8d1');
+      if (!item.isUnlocked) {
+        card.bg.setFillStyle(STORE_CARD_LOCKED_BG, 1);
+        card.bg.setStrokeStyle(2, STORE_CARD_LOCKED_BORDER);
+        card.imageBg.setFillStyle(STORE_CARD_LOCKED_IMAGE_BG, 1);
+        card.imageBg.setStrokeStyle(1, 0x4a5879);
+        card.imageText.setColor('#8d9ab5');
+        card.titleText.setText(item.title);
+        card.titleText.setColor('#b1bad0');
+        card.lockText.setText('LOCK');
+        card.lockText.setVisible(true);
+        card.requirementText.setText(item.unlockRequirementText ?? 'Prerequis manquant');
+        card.requirementText.setVisible(true);
+        card.costText.setVisible(false);
       } else {
-        card.costText.setText(`${item.nextCost} p.`);
-        card.costText.setColor('#ffd892');
+        card.bg.setFillStyle(STORE_CARD_BG, 1);
+        card.bg.setStrokeStyle(2, STORE_CARD_BORDER);
+        card.imageBg.setFillStyle(STORE_CARD_IMAGE_BG, 1);
+        card.imageBg.setStrokeStyle(1, 0x6178ad);
+        card.imageText.setColor('#d9e5ff');
+        card.titleText.setText(`${item.title} (${item.level}/${item.maxLevel})`);
+        card.titleText.setColor('#f3f6ff');
+        card.lockText.setVisible(false);
+        card.requirementText.setVisible(false);
+        card.costText.setVisible(true);
+        if (item.isMaxed) {
+          card.costText.setText('MAX');
+          card.costText.setColor('#aeb8d1');
+        } else if (item.nextCost === null) {
+          card.costText.setText('---');
+          card.costText.setColor('#aeb8d1');
+        } else {
+          card.costText.setText(`${item.nextCost} p.`);
+          card.costText.setColor('#ffd892');
+        }
       }
     });
 
@@ -634,8 +718,17 @@ export class GameScene extends Phaser.Scene {
       return;
     }
     this.storePopupImageText.setText(selected.imageToken);
-    this.storePopupTitleText.setText(`${selected.title} (${selected.level}/${selected.maxLevel})`);
+    this.storePopupTitleText.setText(
+      selected.isUnlocked ? `${selected.title} (${selected.level}/${selected.maxLevel})` : `${selected.title} (LOCK)`,
+    );
     this.storePopupDescriptionText.setText(selected.description);
+
+    if (!selected.isUnlocked) {
+      this.storePopupUpgradeText.setText(selected.unlockRequirementText ?? 'Prerequis manquant.');
+      this.storePopupUpgradeBg.setFillStyle(BUTTON_DISABLED, 1);
+      this.storePopupUpgradeBg.disableInteractive();
+      return;
+    }
 
     if (selected.isMaxed) {
       this.storePopupUpgradeText.setText('MAX atteint');
@@ -783,7 +876,7 @@ export class GameScene extends Phaser.Scene {
       `Run: ${this.runState.score} pts   |   Total: ${this.meta.totalPoints} pts   |   Vies: ${this.runState.lives}`,
     );
     this.runInfoText.setText(
-      `Temps restant: ${timeLeft}s   |   Vision: ${currentVisionRadius}   |   Bord: ${this.runState.boundaryMode}`,
+      `Temps restant: ${timeLeft}s   |   Vision: ${currentVisionRadius}`,
     );
 
     if (this.runState.phase === 'waiting_start') {
