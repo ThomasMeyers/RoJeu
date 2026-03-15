@@ -823,8 +823,7 @@ export class GameScene extends Phaser.Scene {
 
       switch (entity.kind) {
         case 'orb':
-          this.graphics.fillStyle(0xffd35f, 1);
-          this.graphics.fillCircle(x, y, CELL_SIZE * 0.38);
+          this.drawFriendOrb(x, y);
           break;
         case 'pickup': {
           const pickupDefinition = getPickupDefinitionById(entity.pickupTypeId);
@@ -920,6 +919,40 @@ export class GameScene extends Phaser.Scene {
     this.graphics.fillStyle(0x111111, 1);
     this.graphics.fillCircle(ex1, ey1, 1.5);
     this.graphics.fillCircle(ex2, ey2, 1.5);
+  }
+
+  private drawFriendOrb(cx: number, cy: number) {
+    const hair = 0x6b4c36;  // warmer brown, visible on dark bg
+    const skin = 0xf0c090;
+    const hazel = 0x7a9060;
+
+    // Skin face
+    this.graphics.fillStyle(skin, 1);
+    this.graphics.fillCircle(cx, cy - 1, 10);
+
+    // Hair — short strip across the top (visible on dark bg)
+    this.graphics.fillStyle(hair, 1);
+    this.graphics.fillEllipse(cx, cy - 9, 18, 7);
+
+    // Beard — dominant feature
+    this.graphics.fillEllipse(cx, cy + 6, 20, 14);
+
+    // Mustache
+    this.graphics.fillEllipse(cx, cy + 2, 10, 4);
+
+    // Teeth — small hint of smile
+    this.graphics.fillStyle(0xfffde0, 1);
+    this.graphics.fillRoundedRect(cx - 3, cy + 3, 7, 3, 1);
+
+    // Eyes — hazel irises
+    this.graphics.fillStyle(hazel, 1);
+    this.graphics.fillCircle(cx - 4, cy - 4, 2);
+    this.graphics.fillCircle(cx + 4, cy - 4, 2);
+
+    // Pupils
+    this.graphics.fillStyle(0x111111, 1);
+    this.graphics.fillCircle(cx - 4, cy - 4, 1);
+    this.graphics.fillCircle(cx + 4, cy - 4, 1);
   }
 
   private drawFog() {
