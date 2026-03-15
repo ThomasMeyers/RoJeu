@@ -49,6 +49,10 @@ const endRun = (state: RunState, nowMs: number, deathReason: DeathReason): void 
   state.deathReason = deathReason;
 };
 
+export const commitSudoku = (state: RunState, nowMs: number): void => {
+  endRun(state, nowMs, 'suicide');
+};
+
 const loseLife = (state: RunState, grid: GridSize, nowMs: number, cause: DeathReason): void => {
   state.lives -= 1;
   if (state.lives <= 0) {

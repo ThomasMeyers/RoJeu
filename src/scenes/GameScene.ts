@@ -6,7 +6,7 @@ import {
   saveMetaState,
   upgradeTalentLevel,
 } from '../game/metaState';
-import { createInitialRunState, getCurrentTickMs, getCurrentVisionRadius, queueDirection, stepRun } from '../game/runState';
+import { commitSudoku, createInitialRunState, getCurrentTickMs, getCurrentVisionRadius, queueDirection, stepRun } from '../game/runState';
 import { ensureOrbSpawn } from '../game/spawnSystem';
 import { getPickupDefinitionById } from '../game/pickupCatalog';
 import type { Direction, GridSize, MetaState, RunState } from '../game/types';
@@ -50,6 +50,12 @@ export class GameScene extends Phaser.Scene {
   private runState!: RunState;
 
   private meta!: MetaState;
+
+  private isPaused = false;
+
+  private sudokuButtonBg!: Phaser.GameObjects.Rectangle;
+
+  private sudokuButtonText!: Phaser.GameObjects.Text;
 
   private graphics!: Phaser.GameObjects.Graphics;
 
@@ -166,12 +172,13 @@ export class GameScene extends Phaser.Scene {
 
     this.createEndScreenUi();
     this.createStoreUi();
+    this.createSudokuButton();
     this.registerInputs();
     this.redraw();
   }
 
   update(_time: number, deltaMs: number) {
-    if (this.runState.phase === 'running') {
+    if (this.runState.phase === 'running' && !this.isPaused) {
       this.tickAccumulatorMs += deltaMs;
 
       while (this.tickAccumulatorMs >= getCurrentTickMs(this.runState, this.time.now) && this.runState.phase === 'running') {
@@ -208,6 +215,49 @@ export class GameScene extends Phaser.Scene {
     this.input.keyboard?.on('keydown-R', () => {
       this.restartRun();
     });
+
+    this.input.keyboard?.on('keydown-SPACE', () => {
+      if (this.runState.phase === 'running') {
+        this.isPaused = !this.isPaused;
+        if (!this.isPaused) {
+          this.tickAccumulatorMs = 0;
+        }
+      }
+    });
+  }
+
+  private createSudokuButton() {
+    const btnX = BOARD_OFFSET_X + BOARD_WIDTH - 78;
+    const btnY = BOARD_OFFSET_Y + BOARD_HEIGHT + 24;
+    const BG_NORMAL = 0x5c2020;
+    const BG_HOVER = 0x7a2a2a;
+    const BG_PRESS = 0x4a1818;
+
+    this.sudokuButtonBg = this.add
+      .rectangle(btnX, btnY, 140, 32, BG_NORMAL, 1)
+      .setStrokeStyle(1, 0x9e3a3a)
+      .setInteractive({ useHandCursor: true })
+      .setVisible(false);
+
+    this.sudokuButtonBg.on('pointerover', () => this.sudokuButtonBg.setFillStyle(BG_HOVER));
+    this.sudokuButtonBg.on('pointerout', () => this.sudokuButtonBg.setFillStyle(BG_NORMAL));
+    this.sudokuButtonBg.on('pointerup', () => this.sudokuButtonBg.setFillStyle(BG_HOVER));
+    this.sudokuButtonBg.on('pointerdown', () => {
+      this.sudokuButtonBg.setFillStyle(BG_PRESS);
+      if (this.runState.phase === 'running') {
+        commitSudoku(this.runState, this.time.now);
+        this.redraw();
+      }
+    });
+
+    this.sudokuButtonText = this.add
+      .text(btnX, btnY, 'Commit sudoku', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '13px',
+        color: '#ffb3b3',
+      })
+      .setOrigin(0.5)
+      .setVisible(false);
   }
 
   private createFreshRunState(): RunState {
@@ -218,6 +268,7 @@ export class GameScene extends Phaser.Scene {
 
   private restartRun() {
     this.tickAccumulatorMs = 0;
+    this.isPaused = false;
     this.closeStore();
     this.runState = this.createFreshRunState();
     this.redraw();
@@ -768,6 +819,10 @@ export class GameScene extends Phaser.Scene {
     this.upgradeButtonBg.setVisible(visible);
     this.upgradeButtonText.setVisible(visible);
     this.upgradeHintText.setVisible(visible);
+    if (visible) {
+      this.sudokuButtonBg.setVisible(false);
+      this.sudokuButtonText.setVisible(false);
+    }
   }
 
   private redraw() {
@@ -1018,6 +1073,10 @@ export class GameScene extends Phaser.Scene {
       `Temps restant: ${timeLeft}s   |   Vision: ${currentVisionRadius}`,
     );
 
+    const isRunning = this.runState.phase === 'running';
+    this.sudokuButtonBg.setVisible(isRunning);
+    this.sudokuButtonText.setVisible(isRunning);
+
     if (this.runState.phase === 'waiting_start') {
       this.statusText.setVisible(false);
       this.waitingText.setVisible(true);
@@ -1040,6 +1099,8 @@ export class GameScene extends Phaser.Scene {
         return "Le temps est ecoule, Rogie s'est echappe.";
       case 'no_lives':
         return "Tu n'as plus de vie.";
+      case 'suicide':
+        return 'rm -rf';
       default:
         return 'La run est terminee.';
     }

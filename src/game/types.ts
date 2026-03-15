@@ -3,7 +3,7 @@ export type BoundaryMode = 'wall-kill' | 'wrap-around';
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
 export type RunPhase = 'waiting_start' | 'running' | 'ended';
-export type DeathReason = 'wall_collision' | 'self_collision' | 'timer_end' | 'no_lives';
+export type DeathReason = 'wall_collision' | 'self_collision' | 'timer_end' | 'no_lives' | 'suicide';
 
 export interface Point {
   x: number;
