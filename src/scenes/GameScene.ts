@@ -839,14 +839,87 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawSlug() {
-    this.runState.slug.forEach((segment, index) => {
-      const x = BOARD_OFFSET_X + segment.x * CELL_SIZE + 2;
-      const y = BOARD_OFFSET_Y + segment.y * CELL_SIZE + 2;
-      const size = CELL_SIZE - 4;
+    const slug = this.runState.slug;
+    if (slug.length === 0) return;
 
-      this.graphics.fillStyle(index === 0 ? 0x8ed76f : 0x5bbf68, 1);
-      this.graphics.fillRoundedRect(x, y, size, size, 6);
-    });
+    const dir = this.runState.direction;
+    const total = slug.length;
+
+    // Color gradient: bright lime head -> dark olive tail
+    const headColor = { r: 0x9d, g: 0xe8, b: 0x7a };
+    const tailColor = { r: 0x2e, g: 0x62, b: 0x2e };
+
+    const lerpColor = (t: number) => {
+      const r = Math.round(headColor.r + (tailColor.r - headColor.r) * t);
+      const g = Math.round(headColor.g + (tailColor.g - headColor.g) * t);
+      const b = Math.round(headColor.b + (tailColor.b - headColor.b) * t);
+      return (r << 16) | (g << 8) | b;
+    };
+
+    // Draw connector circles between consecutive segment centers to smooth gaps
+    for (let i = 0; i < total - 1; i += 1) {
+      const t = i / Math.max(total - 1, 1);
+      const tNext = (i + 1) / Math.max(total - 1, 1);
+      const color = lerpColor((t + tNext) / 2);
+
+      const cx1 = BOARD_OFFSET_X + slug[i].x * CELL_SIZE + CELL_SIZE / 2;
+      const cy1 = BOARD_OFFSET_Y + slug[i].y * CELL_SIZE + CELL_SIZE / 2;
+      const cx2 = BOARD_OFFSET_X + slug[i + 1].x * CELL_SIZE + CELL_SIZE / 2;
+      const cy2 = BOARD_OFFSET_Y + slug[i + 1].y * CELL_SIZE + CELL_SIZE / 2;
+
+      // Only draw connector if segments are adjacent (not when wrapping around board)
+      const dx = Math.abs(slug[i].x - slug[i + 1].x);
+      const dy = Math.abs(slug[i].y - slug[i + 1].y);
+      if (dx <= 1 && dy <= 1) {
+        const taperT = (t + tNext) / 2;
+        const connectorRadius = Math.round(CELL_SIZE * (0.42 - taperT * 0.18));
+        this.graphics.fillStyle(color, 1);
+        // Fill rectangle between the two centers to avoid gap
+        const minX = Math.min(cx1, cx2) - connectorRadius;
+        const minY = Math.min(cy1, cy2) - connectorRadius;
+        const w = Math.abs(cx2 - cx1) + connectorRadius * 2;
+        const h = Math.abs(cy2 - cy1) + connectorRadius * 2;
+        this.graphics.fillRect(minX, minY, w, h);
+      }
+    }
+
+    // Draw each segment as a circle (tapered toward tail)
+    for (let i = total - 1; i >= 0; i -= 1) {
+      const t = i / Math.max(total - 1, 1);
+      const color = lerpColor(t);
+      const cx = BOARD_OFFSET_X + slug[i].x * CELL_SIZE + CELL_SIZE / 2;
+      const cy = BOARD_OFFSET_Y + slug[i].y * CELL_SIZE + CELL_SIZE / 2;
+      // Head is widest (0.46), tail tapers to 0.22
+      const radius = Math.round(CELL_SIZE * (0.46 - t * 0.24));
+      this.graphics.fillStyle(color, 1);
+      this.graphics.fillCircle(cx, cy, radius);
+    }
+
+    // Eyes on head
+    const headCx = BOARD_OFFSET_X + slug[0].x * CELL_SIZE + CELL_SIZE / 2;
+    const headCy = BOARD_OFFSET_Y + slug[0].y * CELL_SIZE + CELL_SIZE / 2;
+    const eyeOffset = 4;
+    const eyeForward = 3;
+
+    let ex1: number, ey1: number, ex2: number, ey2: number;
+    if (dir === 'right' || dir === 'left') {
+      const fwd = dir === 'right' ? 1 : -1;
+      ex1 = headCx + fwd * eyeForward; ey1 = headCy - eyeOffset;
+      ex2 = headCx + fwd * eyeForward; ey2 = headCy + eyeOffset;
+    } else {
+      const fwd = dir === 'down' ? 1 : -1;
+      ex1 = headCx - eyeOffset; ey1 = headCy + fwd * eyeForward;
+      ex2 = headCx + eyeOffset; ey2 = headCy + fwd * eyeForward;
+    }
+
+    // White sclera
+    this.graphics.fillStyle(0xffffff, 1);
+    this.graphics.fillCircle(ex1, ey1, 3);
+    this.graphics.fillCircle(ex2, ey2, 3);
+    // Dark pupil
+    this.graphics.fillStyle(0x111111, 1);
+    this.graphics.fillCircle(ex1, ey1, 1.5);
+    this.graphics.fillCircle(ex2, ey2, 1.5);
   }
 
   private drawFog() {
