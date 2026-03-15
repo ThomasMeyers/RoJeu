@@ -120,4 +120,39 @@ export const EFFECT_DEFINITIONS: Record<string, EffectDefinition> = {
       stats.boundaryMode = 'wrap-around';
     },
   },
+  speed_boost_pickup_lvl1: {
+    id: 'speed_boost_pickup_lvl1',
+    apply: (stats) => {
+      stats.pickupSpawnChancePerSecond.speed_boost_orb =
+        (stats.pickupSpawnChancePerSecond.speed_boost_orb ?? 0) + 0.03;
+    },
+  },
+  speed_boost_pickup_lvl2: {
+    id: 'speed_boost_pickup_lvl2',
+    apply: (stats) => {
+      stats.pickupSpawnChancePerSecond.speed_boost_orb =
+        (stats.pickupSpawnChancePerSecond.speed_boost_orb ?? 0) + 0.03;
+    },
+  },
+  speed_boost_pickup_lvl3: {
+    id: 'speed_boost_pickup_lvl3',
+    apply: (stats) => {
+      stats.pickupSpawnChancePerSecond.speed_boost_orb =
+        (stats.pickupSpawnChancePerSecond.speed_boost_orb ?? 0) + 0.03;
+    },
+  },
+  speed_boost_pickup_lvl4: {
+    id: 'speed_boost_pickup_lvl4',
+    apply: (stats) => {
+      stats.pickupSpawnChancePerSecond.speed_boost_orb =
+        (stats.pickupSpawnChancePerSecond.speed_boost_orb ?? 0) + 0.03;
+    },
+  },
+  speed_boost_pickup_lvl5: {
+    id: 'speed_boost_pickup_lvl5',
+    apply: (stats) => {
+      stats.pickupSpawnChancePerSecond.speed_boost_orb =
+        (stats.pickupSpawnChancePerSecond.speed_boost_orb ?? 0) + 0.03;
+    },
+  },
 };

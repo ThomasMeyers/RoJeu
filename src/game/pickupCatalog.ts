@@ -1,14 +1,7 @@
-import type { PickupTypeId, RunState, TimedEffectStatModifiers } from './types';
+import type { PickupTypeId, RunState, TimedEffectActivation } from './types';
 
 export type PickupSpawnMode = 'per_second_chance';
-export type TimedEffectRefreshPolicy = 'reset_duration';
-
-export interface TimedEffectActivation {
-  id: string;
-  durationMs: number;
-  refreshPolicy: TimedEffectRefreshPolicy;
-  statModifiers: TimedEffectStatModifiers;
-}
+export type { TimedEffectActivation } from './types';
 
 export interface PickupCollectResult {
   points: number;
@@ -49,10 +42,41 @@ const visionClarityOrbPickup: PickupDefinition = {
   color: 0xffffff,
 };
 
-export const PICKUP_CATALOG: PickupDefinition[] = [visionClarityOrbPickup];
+const SPEED_BOOST_EFFECT_ID = 'speed_boost';
+const SPEED_DEBUFF_EFFECT_ID = 'speed_debuff';
+
+const speedBoostOrbPickup: PickupDefinition = {
+  id: 'speed_boost_orb',
+  maxConcurrent: 3,
+  spawnMode: 'per_second_chance',
+  getSpawnChancePerSecond: (state) => state.stats.pickupSpawnChancePerSecond.speed_boost_orb ?? 0,
+  onCollect: () => ({
+    points: 0,
+    timedEffects: [
+      {
+        id: SPEED_BOOST_EFFECT_ID,
+        durationMs: 10_000,
+        refreshPolicy: 'reset_duration',
+        cancelsEffectIds: [SPEED_DEBUFF_EFFECT_ID],
+        statModifiers: { speedMultiplierDelta: 0.5 },
+        chainEffect: {
+          id: SPEED_DEBUFF_EFFECT_ID,
+          durationMs: 5_000,
+          refreshPolicy: 'reset_duration',
+          statModifiers: { speedMultiplierDelta: -0.5 },
+        },
+      },
+    ],
+  }),
+  renderToken: 'KW',
+  color: 0x111111,
+};
+
+export const PICKUP_CATALOG: PickupDefinition[] = [visionClarityOrbPickup, speedBoostOrbPickup];
 
 const PICKUP_DEFINITIONS_BY_ID: Record<PickupTypeId, PickupDefinition> = {
   vision_clarity_orb: visionClarityOrbPickup,
+  speed_boost_orb: speedBoostOrbPickup,
 };
 
 export const getPickupDefinitions = (): PickupDefinition[] => PICKUP_CATALOG;

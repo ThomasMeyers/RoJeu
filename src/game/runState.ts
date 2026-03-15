@@ -1,7 +1,8 @@
 import { resolveRunStats } from './effects/engine';
 import { resolveBoundary } from './boundary';
 import { consumeEntityAtPoint, ensureOrbSpawn, tickSpawns } from './spawnSystem';
-import { getPickupDefinitionById, type TimedEffectActivation } from './pickupCatalog';
+import { getPickupDefinitionById } from './pickupCatalog';
+import type { TimedEffectActivation } from './types';
 import type { DeathReason, Direction, GridSize, Point, RunState } from './types';
 
 type ScoreGainSource = 'orb' | 'passive_income' | 'pickup';
@@ -94,10 +95,22 @@ const applyPassiveIncome = (state: RunState, elapsedMs: number): void => {
 };
 
 const pruneExpiredTimedEffects = (state: RunState, nowMs: number): void => {
+  const expired = state.activeTimedEffects.filter((effect) => effect.expiresAtMs <= nowMs);
   state.activeTimedEffects = state.activeTimedEffects.filter((effect) => effect.expiresAtMs > nowMs);
+  expired.forEach((effect) => {
+    if (effect.chainEffect) {
+      applyTimedEffectActivation(state, effect.chainEffect, nowMs);
+    }
+  });
 };
 
 const applyTimedEffectActivation = (state: RunState, activation: TimedEffectActivation, nowMs: number): void => {
+  if (activation.cancelsEffectIds && activation.cancelsEffectIds.length > 0) {
+    state.activeTimedEffects = state.activeTimedEffects.filter(
+      (effect) => !activation.cancelsEffectIds!.includes(effect.id),
+    );
+  }
+
   const nextExpiresAtMs = nowMs + activation.durationMs;
   const existingEffect = state.activeTimedEffects.find((effect) => effect.id === activation.id) ?? null;
   if (!existingEffect) {
@@ -105,6 +118,7 @@ const applyTimedEffectActivation = (state: RunState, activation: TimedEffectActi
       id: activation.id,
       expiresAtMs: nextExpiresAtMs,
       statModifiers: activation.statModifiers,
+      chainEffect: activation.chainEffect,
     });
     return;
   }
@@ -112,6 +126,7 @@ const applyTimedEffectActivation = (state: RunState, activation: TimedEffectActi
   if (activation.refreshPolicy === 'reset_duration') {
     existingEffect.expiresAtMs = nextExpiresAtMs;
     existingEffect.statModifiers = activation.statModifiers;
+    existingEffect.chainEffect = activation.chainEffect;
   }
 };
 
@@ -124,6 +139,22 @@ export const getCurrentVisionRadius = (state: RunState, nowMs: number): number =
   }, 0);
 
   return Math.max(0, state.stats.baseVisionRadius + timedVisionDelta);
+};
+
+const getCurrentSpeedMultiplier = (state: RunState, nowMs: number): number => {
+  const timedSpeedDelta = state.activeTimedEffects.reduce((total, effect) => {
+    if (effect.expiresAtMs <= nowMs) {
+      return total;
+    }
+    return total + (effect.statModifiers.speedMultiplierDelta ?? 0);
+  }, 0);
+
+  return 1 + timedSpeedDelta;
+};
+
+export const getCurrentTickMs = (state: RunState, nowMs: number): number => {
+  const speedMultiplier = getCurrentSpeedMultiplier(state, nowMs);
+  return Math.max(40, state.stats.tickMs / speedMultiplier);
 };
 
 export const createInitialRunState = (

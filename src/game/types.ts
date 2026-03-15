@@ -15,7 +15,7 @@ export interface GridSize {
   rows: number;
 }
 
-export type PickupTypeId = 'vision_clarity_orb';
+export type PickupTypeId = 'vision_clarity_orb' | 'speed_boost_orb';
 
 export type EntityKind = 'orb' | 'pickup';
 
@@ -38,12 +38,25 @@ export type SpawnEntity = OrbSpawnEntity | PickupSpawnEntity;
 
 export interface TimedEffectStatModifiers {
   visionRadiusDelta?: number;
+  speedMultiplierDelta?: number;
+}
+
+export type TimedEffectRefreshPolicy = 'reset_duration';
+
+export interface TimedEffectActivation {
+  id: string;
+  durationMs: number;
+  refreshPolicy: TimedEffectRefreshPolicy;
+  statModifiers: TimedEffectStatModifiers;
+  cancelsEffectIds?: string[];
+  chainEffect?: Omit<TimedEffectActivation, 'chainEffect'>;
 }
 
 export interface ActiveTimedEffect {
   id: string;
   expiresAtMs: number;
   statModifiers: TimedEffectStatModifiers;
+  chainEffect?: Omit<TimedEffectActivation, 'chainEffect'>;
 }
 
 export interface RunStats {

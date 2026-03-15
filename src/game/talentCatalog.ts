@@ -107,6 +107,30 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     storeOrder: 1,
   },
   {
+    id: 'speed_boost_pickup',
+    title: 'Speed Boost Pickup',
+    description:
+      'Spawns a speed boost collectible. On pickup: +50% speed for 10s, then -50% speed for 5s. Re-picking during either effect resets the boost and cancels the debuff.',
+    imageToken: 'KW',
+    maxLevel: 5,
+    costsByLevel: [300, 450, 700, 1000, 1400],
+    isAvailable: true,
+    effectIdsByLevel: [
+      'speed_boost_pickup_lvl1',
+      'speed_boost_pickup_lvl2',
+      'speed_boost_pickup_lvl3',
+      'speed_boost_pickup_lvl4',
+      'speed_boost_pickup_lvl5',
+    ],
+    unlockRule: {
+      type: 'requires_talents_all',
+      requirements: [{ talentId: 'no_walls', minLevel: 1 }],
+      requirementText: 'Débloquer le talent Around The World.',
+    },
+    storeRow: 3,
+    storeOrder: 1,
+  },
+  {
     id: 'prototype_slot_a',
     title: 'Be like momo',
     description: 'Prototype reserve pour plus tard.',

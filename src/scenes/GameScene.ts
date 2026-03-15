@@ -6,7 +6,7 @@ import {
   saveMetaState,
   upgradeTalentLevel,
 } from '../game/metaState';
-import { createInitialRunState, getCurrentVisionRadius, queueDirection, stepRun } from '../game/runState';
+import { createInitialRunState, getCurrentTickMs, getCurrentVisionRadius, queueDirection, stepRun } from '../game/runState';
 import { ensureOrbSpawn } from '../game/spawnSystem';
 import { getPickupDefinitionById } from '../game/pickupCatalog';
 import type { Direction, GridSize, MetaState, RunState } from '../game/types';
@@ -165,9 +165,10 @@ export class GameScene extends Phaser.Scene {
     if (this.runState.phase === 'running') {
       this.tickAccumulatorMs += deltaMs;
 
-      while (this.tickAccumulatorMs >= this.runState.stats.tickMs && this.runState.phase === 'running') {
-        this.tickAccumulatorMs -= this.runState.stats.tickMs;
-        stepRun(this.runState, GRID, this.time.now, this.runState.stats.tickMs);
+      while (this.tickAccumulatorMs >= getCurrentTickMs(this.runState, this.time.now) && this.runState.phase === 'running') {
+        const tickMs = getCurrentTickMs(this.runState, this.time.now);
+        this.tickAccumulatorMs -= tickMs;
+        stepRun(this.runState, GRID, this.time.now, tickMs);
       }
     } else if (this.runState.phase === 'ended' && !this.runState.runCommitted) {
       this.meta.totalPoints += this.runState.score;
