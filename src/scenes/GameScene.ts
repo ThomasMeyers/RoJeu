@@ -53,6 +53,12 @@ export class GameScene extends Phaser.Scene {
 
   private graphics!: Phaser.GameObjects.Graphics;
 
+  private coffeeOrbTexts: Phaser.GameObjects.Text[] = [];
+  private coffeeOrbIndex = 0;
+
+  private bulbOrbTexts: Phaser.GameObjects.Text[] = [];
+  private bulbOrbIndex = 0;
+
   private hudBg!: Phaser.GameObjects.Rectangle;
 
   private scoreText!: Phaser.GameObjects.Text;
@@ -124,6 +130,14 @@ export class GameScene extends Phaser.Scene {
     this.meta = loadMetaState();
     this.runState = this.createFreshRunState();
     this.graphics = this.add.graphics();
+    for (let i = 0; i < 3; i += 1) {
+      this.coffeeOrbTexts.push(
+        this.add.text(0, 0, '☕', { fontSize: '16px' }).setOrigin(0.5).setVisible(false).setDepth(10),
+      );
+      this.bulbOrbTexts.push(
+        this.add.text(0, 0, '💡', { fontSize: '12px' }).setOrigin(0.5).setVisible(false).setDepth(10),
+      );
+    }
     this.hudBg = this.add
       .rectangle(BOARD_OFFSET_X + BOARD_WIDTH / 2, 34, BOARD_WIDTH, 54, HUD_BG_COLOR, 0.92)
       .setStrokeStyle(1, 0x2d3958)
@@ -763,6 +777,10 @@ export class GameScene extends Phaser.Scene {
 
   private redraw() {
     this.graphics.clear();
+    this.coffeeOrbTexts.forEach((t) => t.setVisible(false));
+    this.coffeeOrbIndex = 0;
+    this.bulbOrbTexts.forEach((t) => t.setVisible(false));
+    this.bulbOrbIndex = 0;
     if (this.runState.phase === 'ended') {
       this.setEndScreenVisible(true);
       this.drawEndScreen();
@@ -827,9 +845,17 @@ export class GameScene extends Phaser.Scene {
           this.drawFriendOrb(x, y);
           break;
         case 'pickup': {
-          const pickupDefinition = getPickupDefinitionById(entity.pickupTypeId);
-          this.graphics.fillStyle(pickupDefinition?.color ?? 0xffffff, 1);
-          this.graphics.fillCircle(x, y, CELL_SIZE * 0.34);
+          if (entity.pickupTypeId === 'speed_boost_orb' && this.coffeeOrbIndex < this.coffeeOrbTexts.length) {
+            this.coffeeOrbTexts[this.coffeeOrbIndex].setPosition(x, y).setVisible(true);
+            this.coffeeOrbIndex += 1;
+          } else if (entity.pickupTypeId === 'vision_clarity_orb' && this.bulbOrbIndex < this.bulbOrbTexts.length) {
+            this.bulbOrbTexts[this.bulbOrbIndex].setPosition(x, y).setVisible(true);
+            this.bulbOrbIndex += 1;
+          } else {
+            const pickupDefinition = getPickupDefinitionById(entity.pickupTypeId);
+            this.graphics.fillStyle(pickupDefinition?.color ?? 0xffffff, 1);
+            this.graphics.fillCircle(x, y, CELL_SIZE * 0.34);
+          }
           break;
         }
         default:
