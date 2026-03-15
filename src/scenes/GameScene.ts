@@ -56,8 +56,6 @@ export class GameScene extends Phaser.Scene {
   private coffeeOrbTexts: Phaser.GameObjects.Text[] = [];
   private coffeeOrbIndex = 0;
 
-  private bulbOrbTexts: Phaser.GameObjects.Text[] = [];
-  private bulbOrbIndex = 0;
 
   private hudBg!: Phaser.GameObjects.Rectangle;
 
@@ -133,9 +131,6 @@ export class GameScene extends Phaser.Scene {
     for (let i = 0; i < 3; i += 1) {
       this.coffeeOrbTexts.push(
         this.add.text(0, 0, '☕', { fontSize: '16px' }).setOrigin(0.5).setVisible(false).setDepth(10),
-      );
-      this.bulbOrbTexts.push(
-        this.add.text(0, 0, '💡', { fontSize: '12px' }).setOrigin(0.5).setVisible(false).setDepth(10),
       );
     }
     this.hudBg = this.add
@@ -779,8 +774,6 @@ export class GameScene extends Phaser.Scene {
     this.graphics.clear();
     this.coffeeOrbTexts.forEach((t) => t.setVisible(false));
     this.coffeeOrbIndex = 0;
-    this.bulbOrbTexts.forEach((t) => t.setVisible(false));
-    this.bulbOrbIndex = 0;
     if (this.runState.phase === 'ended') {
       this.setEndScreenVisible(true);
       this.drawEndScreen();
@@ -848,9 +841,8 @@ export class GameScene extends Phaser.Scene {
           if (entity.pickupTypeId === 'speed_boost_orb' && this.coffeeOrbIndex < this.coffeeOrbTexts.length) {
             this.coffeeOrbTexts[this.coffeeOrbIndex].setPosition(x, y).setVisible(true);
             this.coffeeOrbIndex += 1;
-          } else if (entity.pickupTypeId === 'vision_clarity_orb' && this.bulbOrbIndex < this.bulbOrbTexts.length) {
-            this.bulbOrbTexts[this.bulbOrbIndex].setPosition(x, y).setVisible(true);
-            this.bulbOrbIndex += 1;
+          } else if (entity.pickupTypeId === 'vision_clarity_orb') {
+            this.drawBulbOrb(x, y);
           } else {
             const pickupDefinition = getPickupDefinitionById(entity.pickupTypeId);
             this.graphics.fillStyle(pickupDefinition?.color ?? 0xffffff, 1);
@@ -980,6 +972,20 @@ export class GameScene extends Phaser.Scene {
     this.graphics.fillStyle(0x111111, 1);
     this.graphics.fillCircle(cx - 4, cy - 4, 1);
     this.graphics.fillCircle(cx + 4, cy - 4, 1);
+  }
+
+  private drawBulbOrb(cx: number, cy: number) {
+    // Bulb — warm yellow circle, shifted up to leave room for socket
+    this.graphics.fillStyle(0xf5c518, 1);
+    this.graphics.fillCircle(cx, cy - 3, 7);
+
+    // Inner highlight — off-center bright spot
+    this.graphics.fillStyle(0xfffde0, 1);
+    this.graphics.fillCircle(cx - 2, cy - 5, 2.5);
+
+    // Socket — small grey rounded rect below bulb
+    this.graphics.fillStyle(0x8899aa, 1);
+    this.graphics.fillRoundedRect(cx - 3, cy + 4, 6, 4, 1);
   }
 
   private drawFog() {
