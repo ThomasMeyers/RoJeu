@@ -37,6 +37,7 @@ const STORE_CARD_LOCKED_IMAGE_BG = 0x1c2538;
 
 interface StoreCardUi {
   talentId: string;
+  baseCenterY: number;
   bg: Phaser.GameObjects.Rectangle;
   imageBg: Phaser.GameObjects.Rectangle;
   imageText: Phaser.GameObjects.Text;
@@ -107,6 +108,10 @@ export class GameScene extends Phaser.Scene {
 
   private storeCardUis: StoreCardUi[] = [];
 
+  private storeHeaderBg!: Phaser.GameObjects.Rectangle;
+
+  private storeHeaderSeparator!: Phaser.GameObjects.Graphics;
+
   private storePopupBg!: Phaser.GameObjects.Rectangle;
 
   private storePopupCloseText!: Phaser.GameObjects.Text;
@@ -122,6 +127,22 @@ export class GameScene extends Phaser.Scene {
   private storePopupUpgradeBg!: Phaser.GameObjects.Rectangle;
 
   private storePopupUpgradeText!: Phaser.GameObjects.Text;
+
+  private storeScrollY = 0;
+
+  private storeMaxScrollY = 0;
+
+  private storeCardHeight = 0;
+
+  private storeImgOffsetY = 0;
+
+  private storeTitleOffsetY = 0;
+
+  private storeBadgeOffsetY = 0;
+
+  private storeScrollUpIndicator!: Phaser.GameObjects.Text;
+
+  private storeScrollDownIndicator!: Phaser.GameObjects.Text;
 
   private tickAccumulatorMs = 0;
 
@@ -223,6 +244,12 @@ export class GameScene extends Phaser.Scene {
           this.tickAccumulatorMs = 0;
         }
       }
+    });
+
+    this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: unknown, _deltaX: number, deltaY: number) => {
+      if (!this.isStoreOpen || this.selectedStoreTalentId) return;
+      this.storeScrollY = Phaser.Math.Clamp(this.storeScrollY + deltaY * 0.5, 0, this.storeMaxScrollY);
+      this.refreshStoreUi();
     });
   }
 
@@ -401,9 +428,8 @@ export class GameScene extends Phaser.Scene {
     const centerY = BOARD_OFFSET_Y + BOARD_HEIGHT / 2;
     const storeItems = getStoreTalentItems(this.meta);
     const cardWidth = 142;
-    const cardHeight = 162;
     const cardGap = 12;
-    const rowGap = 14;
+    const rowGap = 10;
     const rows = Array.from(new Set(storeItems.map((item) => item.storeRow))).sort((a, b) => a - b);
     const rowItemsMap = new Map<number, typeof storeItems>();
     storeItems.forEach((item) => {
@@ -412,12 +438,49 @@ export class GameScene extends Phaser.Scene {
       rowItemsMap.set(item.storeRow, entries);
     });
     rowItemsMap.forEach((items) => items.sort((a, b) => a.storeOrder - b.storeOrder));
+    // Fixed card size — scrolling handles overflow when there are many rows.
+    const STORE_HEADER_H = 76; // space reserved for title + points line
+    const STORE_FOOTER_H = 8;  // bottom margin
+    const cardHeight = 162;
+    const availableH = BOARD_HEIGHT - STORE_HEADER_H - STORE_FOOTER_H;
+    const imgSize = 72;
+    const imgOffsetY = -36;
+    const titleFontPx = 14;
+    const titleOffsetY = 10;
+    const badgeFontPx = 13;
+    const badgeOffsetY = 58;
+    const imageTokenFontPx = 22;
+    const costFontPx = 16;
+    // Center the card grid in the available area; scroll handles any overflow.
+    // Clamp so row 1 is never above the header bottom — when totalRowsHeight > availableH
+    // the centering formula overflows both top and bottom; the clamp removes the top overflow.
     const totalRowsHeight = rows.length * cardHeight + Math.max(0, rows.length - 1) * rowGap;
-    const firstRowCenterY = centerY - totalRowsHeight / 2 + cardHeight / 2 + 6;
+    const cardsAreaCenterY = BOARD_OFFSET_Y + STORE_HEADER_H + availableH / 2;
+    const topBound = BOARD_OFFSET_Y + STORE_HEADER_H;
+    const firstRowCenterY = Math.max(
+      Math.round(cardsAreaCenterY - totalRowsHeight / 2 + cardHeight / 2),
+      topBound + cardHeight / 2,
+    );
 
     this.storeOverlayBg = this.add
       .rectangle(centerX, centerY, BOARD_WIDTH, BOARD_HEIGHT, STORE_OVERLAY_BG, 0.96)
       .setDepth(40)
+      .setVisible(false);
+
+    // Header mask — covers any cards that scroll under (or above) the header zone.
+    // Extends 200px above BOARD_OFFSET_Y so cards never peek above the board.
+    const maskExtraTop = 200;
+    const maskHeight = STORE_HEADER_H + maskExtraTop;
+    const maskCenterY = BOARD_OFFSET_Y + STORE_HEADER_H - maskHeight / 2;
+    this.storeHeaderBg = this.add
+      .rectangle(centerX, maskCenterY, BOARD_WIDTH, maskHeight, STORE_OVERLAY_BG, 1)
+      .setDepth(44)
+      .setVisible(false);
+
+    this.storeHeaderSeparator = this.add.graphics()
+      .lineStyle(1, 0x2a3a5c, 0.8)
+      .lineBetween(BOARD_OFFSET_X, BOARD_OFFSET_Y + STORE_HEADER_H, BOARD_OFFSET_X + BOARD_WIDTH, BOARD_OFFSET_Y + STORE_HEADER_H)
+      .setDepth(44)
       .setVisible(false);
 
     this.storeTitleText = this.add
@@ -427,7 +490,7 @@ export class GameScene extends Phaser.Scene {
         color: '#eef3ff',
       })
       .setOrigin(0.5)
-      .setDepth(41)
+      .setDepth(45)
       .setVisible(false);
 
     this.storePointsText = this.add
@@ -436,14 +499,14 @@ export class GameScene extends Phaser.Scene {
         fontSize: '17px',
         color: '#ffd892',
       })
-      .setDepth(41)
+      .setDepth(45)
       .setVisible(false);
 
     this.storeCloseBg = this.add
       .rectangle(BOARD_OFFSET_X + BOARD_WIDTH - 26, BOARD_OFFSET_Y + 24, 28, 28, 0x2f3b56, 1)
       .setStrokeStyle(1, 0x596a90)
       .setInteractive({ useHandCursor: true })
-      .setDepth(41)
+      .setDepth(50)
       .setVisible(false);
     this.storeCloseBg.on('pointerdown', (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
       event.stopPropagation();
@@ -457,7 +520,7 @@ export class GameScene extends Phaser.Scene {
         color: '#ffffff',
       })
       .setOrigin(0.5)
-      .setDepth(42)
+      .setDepth(51)
       .setVisible(false);
 
     this.storeCardUis = [];
@@ -487,15 +550,15 @@ export class GameScene extends Phaser.Scene {
         );
 
         const imageBg = this.add
-          .rectangle(cardCenterX, cardY - 36, 72, 72, STORE_CARD_IMAGE_BG, 1)
+          .rectangle(cardCenterX, cardY + imgOffsetY, imgSize, imgSize, STORE_CARD_IMAGE_BG, 1)
           .setStrokeStyle(1, 0x6178ad)
           .setDepth(42)
           .setVisible(false);
 
         const imageText = this.add
-          .text(cardCenterX, cardY - 36, item.imageToken, {
+          .text(cardCenterX, cardY + imgOffsetY, item.imageToken, {
             fontFamily: 'Arial, sans-serif',
-            fontSize: '22px',
+            fontSize: `${imageTokenFontPx}px`,
             color: '#d9e5ff',
           })
           .setOrigin(0.5)
@@ -503,9 +566,9 @@ export class GameScene extends Phaser.Scene {
           .setVisible(false);
 
         const titleText = this.add
-          .text(cardCenterX, cardY + 10, '', {
+          .text(cardCenterX, cardY + titleOffsetY, '', {
             fontFamily: 'Arial, sans-serif',
-            fontSize: '14px',
+            fontSize: `${titleFontPx}px`,
             color: '#f3f6ff',
             align: 'center',
             wordWrap: { width: cardWidth - 16 },
@@ -515,9 +578,9 @@ export class GameScene extends Phaser.Scene {
           .setVisible(false);
 
         const lockText = this.add
-          .text(cardCenterX, cardY + 36, 'LOCK', {
+          .text(cardCenterX, cardY + badgeOffsetY, 'LOCK', {
             fontFamily: 'Arial, sans-serif',
-            fontSize: '13px',
+            fontSize: `${badgeFontPx}px`,
             color: '#95a0ba',
             align: 'center',
           })
@@ -525,10 +588,12 @@ export class GameScene extends Phaser.Scene {
           .setDepth(42)
           .setVisible(false);
 
+        // requirementText is kept for interface compatibility but not shown on cards
+        // (full requirement is shown in the detail popup).
         const requirementText = this.add
-          .text(cardCenterX, cardY + 56, '', {
+          .text(cardCenterX, cardY + badgeOffsetY, '', {
             fontFamily: 'Arial, sans-serif',
-            fontSize: '11px',
+            fontSize: '10px',
             color: '#8f9ab3',
             align: 'center',
             wordWrap: { width: cardWidth - 18 },
@@ -538,9 +603,9 @@ export class GameScene extends Phaser.Scene {
           .setVisible(false);
 
         const costText = this.add
-          .text(cardCenterX, cardY + 58, '', {
+          .text(cardCenterX, cardY + badgeOffsetY, '', {
             fontFamily: 'Arial, sans-serif',
-            fontSize: '16px',
+            fontSize: `${costFontPx}px`,
             color: '#ffd892',
             align: 'center',
           })
@@ -550,6 +615,7 @@ export class GameScene extends Phaser.Scene {
 
         this.storeCardUis.push({
           talentId: item.id,
+          baseCenterY: cardY,
           bg,
           imageBg,
           imageText,
@@ -560,6 +626,26 @@ export class GameScene extends Phaser.Scene {
         });
       });
     });
+
+    // Store layout constants for use in refreshStoreUi.
+    this.storeCardHeight = cardHeight;
+    this.storeImgOffsetY = imgOffsetY;
+    this.storeTitleOffsetY = titleOffsetY;
+    this.storeBadgeOffsetY = badgeOffsetY;
+    this.storeMaxScrollY = Math.max(0, totalRowsHeight - availableH);
+
+    // Scroll indicators — shown when more content exists above/below the visible area.
+    const bottomBound = BOARD_OFFSET_Y + BOARD_HEIGHT - STORE_FOOTER_H;
+    this.storeScrollUpIndicator = this.add
+      .text(centerX, topBound + 12, '▲', { fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#8a9cc0' })
+      .setOrigin(0.5)
+      .setDepth(49)
+      .setVisible(false);
+    this.storeScrollDownIndicator = this.add
+      .text(centerX, bottomBound - 12, '▼', { fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#8a9cc0' })
+      .setOrigin(0.5)
+      .setDepth(49)
+      .setVisible(false);
 
     this.storePopupBg = this.add
       .rectangle(centerX, centerY + 8, 360, 262, STORE_POPUP_BG, 1)
@@ -604,8 +690,9 @@ export class GameScene extends Phaser.Scene {
     this.storePopupTitleText = this.add
       .text(centerX - 74, centerY - 90, '', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '24px',
+        fontSize: '18px',
         color: '#f2f6ff',
+        wordWrap: { width: 236 },
       })
       .setDepth(46)
       .setVisible(false);
@@ -613,10 +700,10 @@ export class GameScene extends Phaser.Scene {
     this.storePopupDescriptionText = this.add
       .text(centerX - 132, centerY - 24, '', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '16px',
+        fontSize: '14px',
         color: '#c4d0e8',
         align: 'left',
-        wordWrap: { width: 268 },
+        wordWrap: { width: 300 },
       })
       .setDepth(46)
       .setVisible(false);
@@ -655,6 +742,7 @@ export class GameScene extends Phaser.Scene {
 
   private openStore() {
     this.isStoreOpen = true;
+    this.storeScrollY = 0;
     this.selectedStoreTalentId = null;
     this.setEndScreenButtonsInteractive(false);
     this.setStorePopupVisible(false);
@@ -682,10 +770,14 @@ export class GameScene extends Phaser.Scene {
 
   private setStoreVisible(visible: boolean) {
     this.storeOverlayBg.setVisible(visible);
+    this.storeHeaderBg.setVisible(visible);
+    this.storeHeaderSeparator.setVisible(visible);
     this.storeTitleText.setVisible(visible);
     this.storePointsText.setVisible(visible);
     this.storeCloseBg.setVisible(visible);
     this.storeCloseText.setVisible(visible);
+    this.storeScrollUpIndicator.setVisible(visible && this.storeScrollY > 0);
+    this.storeScrollDownIndicator.setVisible(visible && this.storeScrollY < this.storeMaxScrollY);
     this.storeCardUis.forEach((card) => {
       card.bg.setVisible(visible);
       card.imageBg.setVisible(visible);
@@ -718,6 +810,9 @@ export class GameScene extends Phaser.Scene {
   private refreshStoreUi() {
     const storeItems = getStoreTalentItems(this.meta);
     this.storePointsText.setText(`Points dispo: ${this.meta.totalPoints} p.`);
+    const topBound = BOARD_OFFSET_Y + 76;  // STORE_HEADER_H
+    const bottomBound = BOARD_OFFSET_Y + BOARD_HEIGHT - 8;  // STORE_FOOTER_H
+    const halfH = this.storeCardHeight / 2;
     this.storeCardUis.forEach((card) => {
       const item = storeItems.find((entry) => entry.id === card.talentId);
       if (!item) {
@@ -731,6 +826,26 @@ export class GameScene extends Phaser.Scene {
         return;
       }
 
+      // Apply scroll offset and clip cards outside the visible area.
+      const displayY = card.baseCenterY - this.storeScrollY;
+      if (displayY + halfH <= topBound || displayY - halfH >= bottomBound) {
+        card.bg.setVisible(false);
+        card.imageBg.setVisible(false);
+        card.imageText.setVisible(false);
+        card.titleText.setVisible(false);
+        card.lockText.setVisible(false);
+        card.requirementText.setVisible(false);
+        card.costText.setVisible(false);
+        return;
+      }
+      card.bg.setY(displayY);
+      card.imageBg.setY(displayY + this.storeImgOffsetY);
+      card.imageText.setY(displayY + this.storeImgOffsetY);
+      card.titleText.setY(displayY + this.storeTitleOffsetY);
+      card.lockText.setY(displayY + this.storeBadgeOffsetY);
+      card.requirementText.setY(displayY + this.storeBadgeOffsetY);
+      card.costText.setY(displayY + this.storeBadgeOffsetY);
+
       card.imageText.setText(item.imageToken);
       if (!item.isUnlocked) {
         card.bg.setFillStyle(STORE_CARD_LOCKED_BG, 1);
@@ -743,7 +858,7 @@ export class GameScene extends Phaser.Scene {
         card.lockText.setText('LOCK');
         card.lockText.setVisible(true);
         card.requirementText.setText(item.unlockRequirementText ?? 'Prerequis manquant');
-        card.requirementText.setVisible(true);
+        card.requirementText.setVisible(false); // full requirement shown in detail popup, not on card
         card.costText.setVisible(false);
       } else {
         card.bg.setFillStyle(STORE_CARD_BG, 1);
@@ -768,6 +883,9 @@ export class GameScene extends Phaser.Scene {
         }
       }
     });
+
+    this.storeScrollUpIndicator.setVisible(this.storeScrollY > 0);
+    this.storeScrollDownIndicator.setVisible(this.storeScrollY < this.storeMaxScrollY);
 
     if (!this.selectedStoreTalentId) {
       return;
