@@ -14,6 +14,7 @@ export interface TalentStoreItem {
   isMaxed: boolean;
   canUpgrade: boolean;
   isUnlocked: boolean;
+  isDeeplyLocked: boolean;
   unlockRequirementText: string | null;
   storeRow: number;
   storeOrder: number;
@@ -156,6 +157,13 @@ export const getStoreTalentItems = (meta: MetaState): TalentStoreItem[] =>
     const nextCost = getTalentNextCost(meta, talent.id);
     const isMaxed = level >= talent.maxLevel;
     const isUnlocked = isUnlockRuleSatisfied(meta, talent.unlockRule);
+    let isDeeplyLocked = false;
+    if (!isUnlocked && talent.unlockRule.type === 'requires_talents_all') {
+      isDeeplyLocked = talent.unlockRule.requirements.some((req) => {
+        const reqTalent = TALENT_CATALOG.find((t) => t.id === req.talentId);
+        return reqTalent != null && !isUnlockRuleSatisfied(meta, reqTalent.unlockRule);
+      });
+    }
     const unlockRequirementText = resolveUnlockRequirementText(talent.unlockRule);
 
     return {
@@ -169,6 +177,7 @@ export const getStoreTalentItems = (meta: MetaState): TalentStoreItem[] =>
       isMaxed,
       canUpgrade: isUnlocked && !isMaxed && nextCost !== null && meta.totalPoints >= nextCost,
       isUnlocked,
+      isDeeplyLocked,
       unlockRequirementText,
       storeRow: talent.storeRow,
       storeOrder: talent.storeOrder,

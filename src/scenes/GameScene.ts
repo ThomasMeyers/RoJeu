@@ -34,6 +34,8 @@ const STORE_POPUP_BG = 0x0f1523;
 const STORE_CARD_LOCKED_BG = 0x121621;
 const STORE_CARD_LOCKED_BORDER = 0x2a3144;
 const STORE_CARD_LOCKED_IMAGE_BG = 0x1c2538;
+const STORE_HEADER_H = 76;
+const STORE_FOOTER_H = 8;
 
 interface StoreCardUi {
   talentId: string;
@@ -41,9 +43,11 @@ interface StoreCardUi {
   bg: Phaser.GameObjects.Rectangle;
   imageBg: Phaser.GameObjects.Rectangle;
   imageText: Phaser.GameObjects.Text;
+  pipsText: Phaser.GameObjects.Text;
   titleText: Phaser.GameObjects.Text;
+  levelText: Phaser.GameObjects.Text;
   lockText: Phaser.GameObjects.Text;
-  requirementText: Phaser.GameObjects.Text;
+  costBadgeBg: Phaser.GameObjects.Rectangle;
   costText: Phaser.GameObjects.Text;
 }
 
@@ -62,7 +66,6 @@ export class GameScene extends Phaser.Scene {
 
   private coffeeOrbTexts: Phaser.GameObjects.Text[] = [];
   private coffeeOrbIndex = 0;
-
 
   private hudBg!: Phaser.GameObjects.Rectangle;
 
@@ -124,6 +127,10 @@ export class GameScene extends Phaser.Scene {
 
   private storePopupDescriptionText!: Phaser.GameObjects.Text;
 
+  private storePopupLevelText!: Phaser.GameObjects.Text;
+
+  private storePopupSeparator!: Phaser.GameObjects.Graphics;
+
   private storePopupUpgradeBg!: Phaser.GameObjects.Rectangle;
 
   private storePopupUpgradeText!: Phaser.GameObjects.Text;
@@ -139,6 +146,12 @@ export class GameScene extends Phaser.Scene {
   private storeTitleOffsetY = 0;
 
   private storeBadgeOffsetY = 0;
+
+  private storePipsOffsetY = 0;
+
+  private storeLevelOffsetY = 0;
+
+  private storeCostBadgeOffsetY = 0;
 
   private storeScrollUpIndicator!: Phaser.GameObjects.Text;
 
@@ -439,15 +452,12 @@ export class GameScene extends Phaser.Scene {
     });
     rowItemsMap.forEach((items) => items.sort((a, b) => a.storeOrder - b.storeOrder));
     // Fixed card size — scrolling handles overflow when there are many rows.
-    const STORE_HEADER_H = 76; // space reserved for title + points line
-    const STORE_FOOTER_H = 8;  // bottom margin
     const cardHeight = 162;
     const availableH = BOARD_HEIGHT - STORE_HEADER_H - STORE_FOOTER_H;
     const imgSize = 72;
     const imgOffsetY = -36;
     const titleFontPx = 14;
     const titleOffsetY = 10;
-    const badgeFontPx = 13;
     const badgeOffsetY = 58;
     const imageTokenFontPx = 22;
     const costFontPx = 16;
@@ -496,7 +506,7 @@ export class GameScene extends Phaser.Scene {
     this.storePointsText = this.add
       .text(BOARD_OFFSET_X + 20, BOARD_OFFSET_Y + 52, '', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '17px',
+        fontSize: '19px',
         color: '#ffd892',
       })
       .setDepth(45)
@@ -565,8 +575,19 @@ export class GameScene extends Phaser.Scene {
           .setDepth(43)
           .setVisible(false);
 
+        const pipsText = this.add
+          .text(cardCenterX, cardY + 8, '', {
+            fontFamily: 'Arial, sans-serif',
+            fontSize: '14px',
+            color: '#c8d4f0',
+            align: 'center',
+          })
+          .setOrigin(0.5)
+          .setDepth(42)
+          .setVisible(false);
+
         const titleText = this.add
-          .text(cardCenterX, cardY + titleOffsetY, '', {
+          .text(cardCenterX, cardY + titleOffsetY + 10, '', {
             fontFamily: 'Arial, sans-serif',
             fontSize: `${titleFontPx}px`,
             color: '#f3f6ff',
@@ -577,40 +598,43 @@ export class GameScene extends Phaser.Scene {
           .setDepth(42)
           .setVisible(false);
 
-        const lockText = this.add
-          .text(cardCenterX, cardY + badgeOffsetY, 'LOCK', {
+        const levelText = this.add
+          .text(cardCenterX, cardY + titleOffsetY + 26, '', {
             fontFamily: 'Arial, sans-serif',
-            fontSize: `${badgeFontPx}px`,
-            color: '#95a0ba',
+            fontSize: '11px',
+            color: '#8a9cc0',
             align: 'center',
           })
           .setOrigin(0.5)
           .setDepth(42)
           .setVisible(false);
 
-        // requirementText is kept for interface compatibility but not shown on cards
-        // (full requirement is shown in the detail popup).
-        const requirementText = this.add
-          .text(cardCenterX, cardY + badgeOffsetY, '', {
+        const lockText = this.add
+          .text(cardCenterX, cardY + badgeOffsetY, '🔒', {
             fontFamily: 'Arial, sans-serif',
-            fontSize: '10px',
-            color: '#8f9ab3',
+            fontSize: '16px',
+            color: '#6b7a9e',
             align: 'center',
-            wordWrap: { width: cardWidth - 18 },
           })
           .setOrigin(0.5)
+          .setDepth(42)
+          .setVisible(false);
+
+        const costBadgeBg = this.add
+          .rectangle(cardCenterX, cardY + 65, cardWidth - 16, 24, 0x151b2e, 1)
+          .setStrokeStyle(1, 0x2a3a5c)
           .setDepth(42)
           .setVisible(false);
 
         const costText = this.add
-          .text(cardCenterX, cardY + badgeOffsetY, '', {
+          .text(cardCenterX, cardY + 65, '', {
             fontFamily: 'Arial, sans-serif',
             fontSize: `${costFontPx}px`,
             color: '#ffd892',
             align: 'center',
           })
           .setOrigin(0.5)
-          .setDepth(42)
+          .setDepth(43)
           .setVisible(false);
 
         this.storeCardUis.push({
@@ -619,9 +643,11 @@ export class GameScene extends Phaser.Scene {
           bg,
           imageBg,
           imageText,
+          pipsText,
           titleText,
+          levelText,
           lockText,
-          requirementText,
+          costBadgeBg,
           costText,
         });
       });
@@ -630,8 +656,11 @@ export class GameScene extends Phaser.Scene {
     // Store layout constants for use in refreshStoreUi.
     this.storeCardHeight = cardHeight;
     this.storeImgOffsetY = imgOffsetY;
-    this.storeTitleOffsetY = titleOffsetY;
+    this.storePipsOffsetY = 8;
+    this.storeTitleOffsetY = titleOffsetY + 10;
+    this.storeLevelOffsetY = titleOffsetY + 26;
     this.storeBadgeOffsetY = badgeOffsetY;
+    this.storeCostBadgeOffsetY = 65;
     this.storeMaxScrollY = Math.max(0, totalRowsHeight - availableH);
 
     // Scroll indicators — shown when more content exists above/below the visible area.
@@ -688,11 +717,20 @@ export class GameScene extends Phaser.Scene {
       .setVisible(false);
 
     this.storePopupTitleText = this.add
-      .text(centerX - 74, centerY - 90, '', {
+      .text(centerX - 74, centerY - 94, '', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '18px',
         color: '#f2f6ff',
         wordWrap: { width: 236 },
+      })
+      .setDepth(46)
+      .setVisible(false);
+
+    this.storePopupLevelText = this.add
+      .text(centerX - 74, centerY - 72, '', {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '13px',
+        color: '#8a9cc0',
       })
       .setDepth(46)
       .setVisible(false);
@@ -705,6 +743,12 @@ export class GameScene extends Phaser.Scene {
         align: 'left',
         wordWrap: { width: 300 },
       })
+      .setDepth(46)
+      .setVisible(false);
+
+    this.storePopupSeparator = this.add.graphics()
+      .lineStyle(1, 0x2a3a5c, 0.6)
+      .lineBetween(centerX - 132, centerY + 55, centerX + 132, centerY + 55)
       .setDepth(46)
       .setVisible(false);
 
@@ -768,6 +812,18 @@ export class GameScene extends Phaser.Scene {
     this.setStorePopupVisible(false);
   }
 
+  private setStoreCardVisible(card: StoreCardUi, visible: boolean) {
+    card.bg.setVisible(visible);
+    card.imageBg.setVisible(visible);
+    card.imageText.setVisible(visible);
+    card.pipsText.setVisible(visible);
+    card.titleText.setVisible(visible);
+    card.levelText.setVisible(visible);
+    card.lockText.setVisible(visible);
+    card.costBadgeBg.setVisible(visible);
+    card.costText.setVisible(visible);
+  }
+
   private setStoreVisible(visible: boolean) {
     this.storeOverlayBg.setVisible(visible);
     this.storeHeaderBg.setVisible(visible);
@@ -776,17 +832,9 @@ export class GameScene extends Phaser.Scene {
     this.storePointsText.setVisible(visible);
     this.storeCloseBg.setVisible(visible);
     this.storeCloseText.setVisible(visible);
-    this.storeScrollUpIndicator.setVisible(visible && this.storeScrollY > 0);
-    this.storeScrollDownIndicator.setVisible(visible && this.storeScrollY < this.storeMaxScrollY);
-    this.storeCardUis.forEach((card) => {
-      card.bg.setVisible(visible);
-      card.imageBg.setVisible(visible);
-      card.imageText.setVisible(visible);
-      card.titleText.setVisible(visible);
-      card.lockText.setVisible(visible);
-      card.requirementText.setVisible(visible);
-      card.costText.setVisible(visible);
-    });
+    this.storeScrollUpIndicator.setVisible(visible);
+    this.storeScrollDownIndicator.setVisible(visible);
+    this.storeCardUis.forEach((card) => this.setStoreCardVisible(card, visible));
   }
 
   private setStorePopupVisible(visible: boolean) {
@@ -795,7 +843,9 @@ export class GameScene extends Phaser.Scene {
     this.storePopupImageBg.setVisible(visible);
     this.storePopupImageText.setVisible(visible);
     this.storePopupTitleText.setVisible(visible);
+    this.storePopupLevelText.setVisible(visible);
     this.storePopupDescriptionText.setVisible(visible);
+    this.storePopupSeparator.setVisible(visible);
     this.storePopupUpgradeBg.setVisible(visible);
     this.storePopupUpgradeText.setVisible(visible);
     this.storeCardUis.forEach((card) => {
@@ -808,57 +858,62 @@ export class GameScene extends Phaser.Scene {
   }
 
   private refreshStoreUi() {
+    // Show store chrome (header, overlay, close button).
+    this.storeOverlayBg.setVisible(true);
+    this.storeHeaderBg.setVisible(true);
+    this.storeHeaderSeparator.setVisible(true);
+    this.storeTitleText.setVisible(true);
+    this.storeCloseBg.setVisible(true);
+    this.storeCloseText.setVisible(true);
+    this.storePointsText.setVisible(true);
+
     const storeItems = getStoreTalentItems(this.meta);
-    this.storePointsText.setText(`Points dispo: ${this.meta.totalPoints} p.`);
-    const topBound = BOARD_OFFSET_Y + 76;  // STORE_HEADER_H
-    const bottomBound = BOARD_OFFSET_Y + BOARD_HEIGHT - 8;  // STORE_FOOTER_H
+    this.storePointsText.setText(`✦ ${this.meta.totalPoints} p.`);
+    const topBound = BOARD_OFFSET_Y + STORE_HEADER_H;
+    const bottomBound = BOARD_OFFSET_Y + BOARD_HEIGHT - STORE_FOOTER_H;
     const halfH = this.storeCardHeight / 2;
     this.storeCardUis.forEach((card) => {
       const item = storeItems.find((entry) => entry.id === card.talentId);
       if (!item) {
-        card.bg.setVisible(false);
-        card.imageBg.setVisible(false);
-        card.imageText.setVisible(false);
-        card.titleText.setVisible(false);
-        card.lockText.setVisible(false);
-        card.requirementText.setVisible(false);
-        card.costText.setVisible(false);
+        this.setStoreCardVisible(card, false);
         return;
       }
 
       // Apply scroll offset and clip cards outside the visible area.
       const displayY = card.baseCenterY - this.storeScrollY;
       if (displayY + halfH <= topBound || displayY - halfH >= bottomBound) {
-        card.bg.setVisible(false);
-        card.imageBg.setVisible(false);
-        card.imageText.setVisible(false);
-        card.titleText.setVisible(false);
-        card.lockText.setVisible(false);
-        card.requirementText.setVisible(false);
-        card.costText.setVisible(false);
+        this.setStoreCardVisible(card, false);
         return;
       }
+      this.setStoreCardVisible(card, true);
       card.bg.setY(displayY);
       card.imageBg.setY(displayY + this.storeImgOffsetY);
       card.imageText.setY(displayY + this.storeImgOffsetY);
+      card.pipsText.setY(displayY + this.storePipsOffsetY);
       card.titleText.setY(displayY + this.storeTitleOffsetY);
+      card.levelText.setY(displayY + this.storeLevelOffsetY);
       card.lockText.setY(displayY + this.storeBadgeOffsetY);
-      card.requirementText.setY(displayY + this.storeBadgeOffsetY);
-      card.costText.setY(displayY + this.storeBadgeOffsetY);
+      card.costBadgeBg.setY(displayY + this.storeCostBadgeOffsetY);
+      card.costText.setY(displayY + this.storeCostBadgeOffsetY);
 
-      card.imageText.setText(item.imageToken);
+      if (!item.isUnlocked && item.isDeeplyLocked) {
+        card.imageText.setText('?');
+      } else {
+        card.imageText.setText(item.imageToken);
+      }
       if (!item.isUnlocked) {
-        card.bg.setFillStyle(STORE_CARD_LOCKED_BG, 1);
+        card.bg.setFillStyle(item.isDeeplyLocked ? 0x0d1120 : STORE_CARD_LOCKED_BG, 1);
         card.bg.setStrokeStyle(2, STORE_CARD_LOCKED_BORDER);
-        card.imageBg.setFillStyle(STORE_CARD_LOCKED_IMAGE_BG, 1);
+        card.imageBg.setFillStyle(item.isDeeplyLocked ? 0x151c2e : STORE_CARD_LOCKED_IMAGE_BG, 1);
         card.imageBg.setStrokeStyle(1, 0x4a5879);
-        card.imageText.setColor('#8d9ab5');
-        card.titleText.setText(item.title);
-        card.titleText.setColor('#b1bad0');
-        card.lockText.setText('LOCK');
+        card.imageText.setColor(item.isDeeplyLocked ? '#5a6580' : '#8d9ab5');
+        card.titleText.setText(item.isDeeplyLocked ? '???' : item.title);
+        card.titleText.setColor(item.isDeeplyLocked ? '#5a6580' : '#b1bad0');
+        card.pipsText.setVisible(false);
+        card.levelText.setVisible(false);
+        card.lockText.setText('🔒');
         card.lockText.setVisible(true);
-        card.requirementText.setText(item.unlockRequirementText ?? 'Prerequis manquant');
-        card.requirementText.setVisible(false); // full requirement shown in detail popup, not on card
+        card.costBadgeBg.setVisible(false);
         card.costText.setVisible(false);
       } else {
         card.bg.setFillStyle(STORE_CARD_BG, 1);
@@ -866,20 +921,36 @@ export class GameScene extends Phaser.Scene {
         card.imageBg.setFillStyle(STORE_CARD_IMAGE_BG, 1);
         card.imageBg.setStrokeStyle(1, 0x6178ad);
         card.imageText.setColor('#d9e5ff');
-        card.titleText.setText(`${item.title} (${item.level}/${item.maxLevel})`);
+        card.titleText.setText(item.title);
         card.titleText.setColor('#f3f6ff');
         card.lockText.setVisible(false);
-        card.requirementText.setVisible(false);
+        card.levelText.setVisible(false);
+        // Pips
+        const pipsFilled = '● '.repeat(item.level).trim();
+        const pipsEmpty = '○ '.repeat(item.maxLevel - item.level).trim();
+        const pips = (pipsFilled + (pipsFilled && pipsEmpty ? ' ' : '') + pipsEmpty);
+        card.pipsText.setText(pips);
+        card.pipsText.setVisible(true);
+        if (item.isMaxed) {
+          card.pipsText.setColor('#ffd700');
+        } else {
+          card.pipsText.setColor('#c8d4f0');
+        }
+        // Cost badge
+        card.costBadgeBg.setVisible(true);
         card.costText.setVisible(true);
         if (item.isMaxed) {
           card.costText.setText('MAX');
-          card.costText.setColor('#aeb8d1');
+          card.costText.setColor('#ffd700');
+          card.costBadgeBg.setFillStyle(0x2a2510, 1);
         } else if (item.nextCost === null) {
           card.costText.setText('---');
           card.costText.setColor('#aeb8d1');
+          card.costBadgeBg.setFillStyle(0x151b2e, 1);
         } else {
           card.costText.setText(`${item.nextCost} p.`);
           card.costText.setColor('#ffd892');
+          card.costBadgeBg.setFillStyle(0x151b2e, 1);
         }
       }
     });
@@ -896,14 +967,30 @@ export class GameScene extends Phaser.Scene {
       this.closeStoreTalentDetails();
       return;
     }
-    this.storePopupImageText.setText(selected.imageToken);
-    this.storePopupTitleText.setText(
-      selected.isUnlocked ? `${selected.title} (${selected.level}/${selected.maxLevel})` : `${selected.title} (LOCK)`,
+    this.storePopupImageText.setText(selected.isDeeplyLocked ? '?' : selected.imageToken);
+    this.storePopupTitleText.setText(selected.isDeeplyLocked ? '???' : selected.title);
+    if (selected.isUnlocked) {
+      if (selected.isMaxed) {
+        this.storePopupLevelText.setText('MAX');
+        this.storePopupLevelText.setColor('#ffd700');
+      } else {
+        this.storePopupLevelText.setText(`Niveau ${selected.level}/${selected.maxLevel}`);
+        this.storePopupLevelText.setColor('#8a9cc0');
+      }
+    } else {
+      this.storePopupLevelText.setText('🔒 Verrouillé');
+      this.storePopupLevelText.setColor('#6b7a9e');
+    }
+    this.storePopupDescriptionText.setText(
+      selected.isDeeplyLocked ? 'Talent mystère' : selected.description,
     );
-    this.storePopupDescriptionText.setText(selected.description);
 
     if (!selected.isUnlocked) {
-      this.storePopupUpgradeText.setText(selected.unlockRequirementText ?? 'Prerequis manquant.');
+      this.storePopupUpgradeText.setText(
+        selected.isDeeplyLocked
+          ? 'Débloquez les talents précédents'
+          : (selected.unlockRequirementText ?? 'Prerequis manquant.'),
+      );
       this.storePopupUpgradeBg.setFillStyle(BUTTON_DISABLED, 1);
       this.storePopupUpgradeBg.disableInteractive();
       return;
@@ -917,7 +1004,7 @@ export class GameScene extends Phaser.Scene {
     }
 
     const labelCost = selected.nextCost ?? 0;
-    this.storePopupUpgradeText.setText(`Ameliorer pour ${labelCost}p.`);
+    this.storePopupUpgradeText.setText(`Ameliorer — ${labelCost} p.`);
     if (selected.canUpgrade) {
       this.storePopupUpgradeBg.setFillStyle(BUTTON_PRIMARY, 1);
       this.storePopupUpgradeBg.setInteractive({ useHandCursor: true });
@@ -951,7 +1038,6 @@ export class GameScene extends Phaser.Scene {
       this.setEndScreenVisible(true);
       this.drawEndScreen();
       if (this.isStoreOpen) {
-        this.setStoreVisible(true);
         this.refreshStoreUi();
       } else {
         this.setStoreVisible(false);
