@@ -19,22 +19,22 @@ const BOARD_WIDTH = GRID.cols * CELL_SIZE;
 const BOARD_HEIGHT = GRID.rows * CELL_SIZE;
 const BOARD_OFFSET_X = 24;
 const BOARD_OFFSET_Y = 72;
-const HUD_BG_COLOR = 0x111829;
-const BUTTON_PRIMARY = 0x396dff;
-const BUTTON_PRIMARY_HOVER = 0x4b7dff;
-const BUTTON_PRIMARY_PRESS = 0x2d5de3;
-const BUTTON_DISABLED = 0x343848;
-const BUTTON_SECONDARY = 0x2e5fd8;
-const BUTTON_SECONDARY_HOVER = 0x3d6fe6;
-const BUTTON_SECONDARY_PRESS = 0x2650b6;
-const STORE_OVERLAY_BG = 0x0a0e17;
-const STORE_CARD_BG = 0x1b2233;
-const STORE_CARD_BORDER = 0x364563;
-const STORE_CARD_IMAGE_BG = 0x2b3856;
-const STORE_POPUP_BG = 0x0f1523;
-const STORE_CARD_LOCKED_BG = 0x121621;
-const STORE_CARD_LOCKED_BORDER = 0x2a3144;
-const STORE_CARD_LOCKED_IMAGE_BG = 0x1c2538;
+const HUD_BG_COLOR = 0x16140e;
+const BUTTON_PRIMARY = 0x8b6b2f;
+const BUTTON_PRIMARY_HOVER = 0xa07a38;
+const BUTTON_PRIMARY_PRESS = 0x725a26;
+const BUTTON_DISABLED = 0x2e2a20;
+const BUTTON_SECONDARY = 0x6b5a30;
+const BUTTON_SECONDARY_HOVER = 0x7d6a38;
+const BUTTON_SECONDARY_PRESS = 0x5a4a26;
+const STORE_OVERLAY_BG = 0x0e0c08;
+const STORE_CARD_BG = 0x1c1a14;
+const STORE_CARD_BORDER = 0x4a4030;
+const STORE_CARD_IMAGE_BG = 0x2a2518;
+const STORE_POPUP_BG = 0x12100a;
+const STORE_CARD_LOCKED_BG = 0x13120e;
+const STORE_CARD_LOCKED_BORDER = 0x332e22;
+const STORE_CARD_LOCKED_IMAGE_BG = 0x1e1a12;
 const STORE_HEADER_H = 76;
 const STORE_FOOTER_H = 8;
 
@@ -183,7 +183,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.setBackgroundColor('#101622');
+    this.cameras.main.setBackgroundColor('#14120c');
     this.meta = loadMetaState();
     this.runState = this.createFreshRunState();
     this.graphics = this.add.graphics();
@@ -194,25 +194,25 @@ export class GameScene extends Phaser.Scene {
     }
     this.hudBg = this.add
       .rectangle(BOARD_OFFSET_X + BOARD_WIDTH / 2, 34, BOARD_WIDTH, 54, HUD_BG_COLOR, 0.92)
-      .setStrokeStyle(1, 0x2d3958)
+      .setStrokeStyle(1, 0x3d362a)
       .setDepth(0);
 
     this.scoreText = this.add.text(24, 20, '', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '17px',
-      color: '#f4f8ff',
+      color: '#f5edd8',
     });
 
     this.runInfoText = this.add.text(24, 42, '', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '14px',
-      color: '#b8c7eb',
+      color: '#c4b898',
     });
 
     this.statusText = this.add.text(24, BOARD_OFFSET_Y + BOARD_HEIGHT + 16, '', {
       fontFamily: 'Arial, sans-serif',
       fontSize: '16px',
-      color: '#d7e2ff',
+      color: '#ddd4b8',
     });
 
     this.waitingText = this.add
@@ -288,13 +288,13 @@ export class GameScene extends Phaser.Scene {
   private createSudokuButton() {
     const btnX = BOARD_OFFSET_X + BOARD_WIDTH - 78;
     const btnY = BOARD_OFFSET_Y + BOARD_HEIGHT + 24;
-    const BG_NORMAL = 0x5c2020;
-    const BG_HOVER = 0x7a2a2a;
-    const BG_PRESS = 0x4a1818;
+    const BG_NORMAL = 0x5c3018;
+    const BG_HOVER = 0x7a3c20;
+    const BG_PRESS = 0x4a2612;
 
     this.sudokuButtonBg = this.add
       .rectangle(btnX, btnY, 140, 32, BG_NORMAL, 1)
-      .setStrokeStyle(1, 0x9e3a3a)
+      .setStrokeStyle(1, 0x9e5a30)
       .setInteractive({ useHandCursor: true })
       .setVisible(false);
 
@@ -313,7 +313,7 @@ export class GameScene extends Phaser.Scene {
       .text(btnX, btnY, 'Commit sudoku', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '13px',
-        color: '#ffb3b3',
+        color: '#ffc8a0',
       })
       .setOrigin(0.5)
       .setVisible(false);
@@ -348,15 +348,15 @@ export class GameScene extends Phaser.Scene {
     const centerY = BOARD_OFFSET_Y + BOARD_HEIGHT / 2;
 
     this.endOverlayBg = this.add
-      .rectangle(centerX, centerY, BOARD_WIDTH, BOARD_HEIGHT, 0x060810, 1)
-      .setStrokeStyle(1, 0x303955)
+      .rectangle(centerX, centerY, BOARD_WIDTH, BOARD_HEIGHT, 0x0c0b07, 1)
+      .setStrokeStyle(1, 0x3d362a)
       .setVisible(false);
 
     this.endTitleText = this.add
       .text(centerX, centerY - 150, '', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '36px',
-        color: '#f5f7ff',
+        color: '#f5edd8',
         align: 'center',
         wordWrap: { width: BOARD_WIDTH - 48 },
       })
@@ -367,7 +367,7 @@ export class GameScene extends Phaser.Scene {
       .text(centerX, centerY - 95, '', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '17px',
-        color: '#cdd8f0',
+        color: '#c4b898',
         align: 'center',
         wordWrap: { width: BOARD_WIDTH - 64 },
       })
@@ -378,7 +378,7 @@ export class GameScene extends Phaser.Scene {
       .text(centerX, centerY - 15, '', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '18px',
-        color: '#f0f4ff',
+        color: '#ede5cc',
         align: 'center',
         lineSpacing: 6,
         wordWrap: { width: BOARD_WIDTH - 56 },
@@ -388,7 +388,7 @@ export class GameScene extends Phaser.Scene {
 
     this.restartButtonBg = this.add
       .rectangle(centerX, centerY + 95, 280, 52, BUTTON_PRIMARY, 1)
-      .setStrokeStyle(2, 0x87a8ff)
+      .setStrokeStyle(2, 0xb89850)
       .setInteractive({ useHandCursor: true })
       .setVisible(false);
     this.restartButtonBg.on('pointerdown', () => {
@@ -416,7 +416,7 @@ export class GameScene extends Phaser.Scene {
 
     this.upgradeButtonBg = this.add
       .rectangle(centerX, centerY + 162, 280, 52, BUTTON_SECONDARY, 1)
-      .setStrokeStyle(2, 0x7ea4ff)
+      .setStrokeStyle(2, 0xa08838)
       .setInteractive({ useHandCursor: true })
       .setVisible(false);
     this.upgradeButtonBg.on('pointerdown', () => {
@@ -449,7 +449,7 @@ export class GameScene extends Phaser.Scene {
       .text(centerX, centerY + 198, 'Ouvre la boutique des talents', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '13px',
-        color: '#7f889f',
+        color: '#8a7e66',
       })
       .setOrigin(0.5)
       .setVisible(false);
@@ -507,7 +507,7 @@ export class GameScene extends Phaser.Scene {
       .setVisible(false);
 
     this.storeHeaderSeparator = this.add.graphics()
-      .lineStyle(1, 0x2a3a5c, 0.8)
+      .lineStyle(1, 0x3a3428, 0.8)
       .lineBetween(BOARD_OFFSET_X, BOARD_OFFSET_Y + STORE_HEADER_H, BOARD_OFFSET_X + BOARD_WIDTH, BOARD_OFFSET_Y + STORE_HEADER_H)
       .setDepth(44)
       .setVisible(false);
@@ -516,7 +516,7 @@ export class GameScene extends Phaser.Scene {
       .text(centerX, BOARD_OFFSET_Y + 28, 'Boutique de la limace', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '26px',
-        color: '#eef3ff',
+        color: '#f5edd8',
       })
       .setOrigin(0.5)
       .setDepth(45)
@@ -532,8 +532,8 @@ export class GameScene extends Phaser.Scene {
       .setVisible(false);
 
     this.storeCloseBg = this.add
-      .rectangle(BOARD_OFFSET_X + BOARD_WIDTH - 26, BOARD_OFFSET_Y + 24, 28, 28, 0x2f3b56, 1)
-      .setStrokeStyle(1, 0x596a90)
+      .rectangle(BOARD_OFFSET_X + BOARD_WIDTH - 26, BOARD_OFFSET_Y + 24, 28, 28, 0x2e2820, 1)
+      .setStrokeStyle(1, 0x5a4e3a)
       .setInteractive({ useHandCursor: true })
       .setDepth(50)
       .setVisible(false);
@@ -580,7 +580,7 @@ export class GameScene extends Phaser.Scene {
 
         const imageBg = this.add
           .rectangle(cardCenterX, cardY + imgOffsetY, imgSize, imgSize, STORE_CARD_IMAGE_BG, 1)
-          .setStrokeStyle(1, 0x6178ad)
+          .setStrokeStyle(1, 0x6b5a38)
           .setDepth(42)
           .setVisible(false);
 
@@ -588,7 +588,7 @@ export class GameScene extends Phaser.Scene {
           .text(cardCenterX, cardY + imgOffsetY, item.imageToken, {
             fontFamily: 'Arial, sans-serif',
             fontSize: `${imageTokenFontPx}px`,
-            color: '#d9e5ff',
+            color: '#ddd4b8',
           })
           .setOrigin(0.5)
           .setDepth(43)
@@ -608,7 +608,7 @@ export class GameScene extends Phaser.Scene {
           .text(cardCenterX, cardY + 50, '', {
             fontFamily: 'Arial, sans-serif',
             fontSize: '14px',
-            color: '#c8d4f0',
+            color: '#c4b898',
             align: 'center',
           })
           .setOrigin(0.5)
@@ -619,7 +619,7 @@ export class GameScene extends Phaser.Scene {
           .text(cardCenterX, cardY + titleOffsetY + 10, '', {
             fontFamily: 'Arial, sans-serif',
             fontSize: `${titleFontPx}px`,
-            color: '#f3f6ff',
+            color: '#f5edd8',
             align: 'center',
             wordWrap: { width: cardWidth - 16 },
           })
@@ -631,7 +631,7 @@ export class GameScene extends Phaser.Scene {
           .text(cardCenterX, cardY + titleOffsetY + 26, '', {
             fontFamily: 'Arial, sans-serif',
             fontSize: '11px',
-            color: '#8a9cc0',
+            color: '#8a7e66',
             align: 'center',
           })
           .setOrigin(0.5)
@@ -642,7 +642,7 @@ export class GameScene extends Phaser.Scene {
           .text(cardCenterX, cardY + badgeOffsetY, '🔒', {
             fontFamily: 'Arial, sans-serif',
             fontSize: '16px',
-            color: '#6b7a9e',
+            color: '#6b6050',
             align: 'center',
           })
           .setOrigin(0.5)
@@ -650,8 +650,8 @@ export class GameScene extends Phaser.Scene {
           .setVisible(false);
 
         const costBadgeBg = this.add
-          .rectangle(cardCenterX, cardY + 65, cardWidth - 16, 24, 0x151b2e, 1)
-          .setStrokeStyle(1, 0x2a3a5c)
+          .rectangle(cardCenterX, cardY + 65, cardWidth - 16, 24, 0x18160e, 1)
+          .setStrokeStyle(1, 0x3a3428)
           .setDepth(42)
           .setVisible(false);
 
@@ -696,19 +696,19 @@ export class GameScene extends Phaser.Scene {
     // Scroll indicators — shown when more content exists above/below the visible area.
     const bottomBound = BOARD_OFFSET_Y + BOARD_HEIGHT - STORE_FOOTER_H;
     this.storeScrollUpIndicator = this.add
-      .text(centerX, topBound + 12, '▲', { fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#8a9cc0' })
+      .text(centerX, topBound + 12, '▲', { fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#8a7e66' })
       .setOrigin(0.5)
       .setDepth(49)
       .setVisible(false);
     this.storeScrollDownIndicator = this.add
-      .text(centerX, bottomBound - 12, '▼', { fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#8a9cc0' })
+      .text(centerX, bottomBound - 12, '▼', { fontFamily: 'Arial, sans-serif', fontSize: '16px', color: '#8a7e66' })
       .setOrigin(0.5)
       .setDepth(49)
       .setVisible(false);
 
     this.storePopupBg = this.add
       .rectangle(centerX, centerY + 4, 400, 290, STORE_POPUP_BG, 1)
-      .setStrokeStyle(2, 0x4f618d)
+      .setStrokeStyle(2, 0x5a4e3a)
       .setDepth(45)
       .setVisible(false);
 
@@ -732,7 +732,7 @@ export class GameScene extends Phaser.Scene {
 
     this.storePopupImageBg = this.add
       .rectangle(centerX - 115, centerY - 24, 140, 140, STORE_CARD_IMAGE_BG, 1)
-      .setStrokeStyle(1, 0x6178ad)
+      .setStrokeStyle(1, 0x6b5a38)
       .setDepth(46)
       .setVisible(false);
 
@@ -740,7 +740,7 @@ export class GameScene extends Phaser.Scene {
       .text(centerX - 115, centerY - 24, '', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '28px',
-        color: '#d9e5ff',
+        color: '#ddd4b8',
       })
       .setOrigin(0.5)
       .setDepth(47)
@@ -757,7 +757,7 @@ export class GameScene extends Phaser.Scene {
       .text(centerX - 30, centerY - 92, '', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '20px',
-        color: '#f2f6ff',
+        color: '#f5edd8',
         fontStyle: 'bold',
         wordWrap: { width: 210 },
       })
@@ -768,7 +768,7 @@ export class GameScene extends Phaser.Scene {
       .text(centerX - 30, centerY - 68, '', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '14px',
-        color: '#8a9cc0',
+        color: '#8a7e66',
       })
       .setDepth(46)
       .setVisible(false);
@@ -777,7 +777,7 @@ export class GameScene extends Phaser.Scene {
       .text(centerX - 30, centerY - 44, '', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '13px',
-        color: '#c4d0e8',
+        color: '#c4b898',
         align: 'left',
         wordWrap: { width: 210 },
       })
@@ -785,14 +785,14 @@ export class GameScene extends Phaser.Scene {
       .setVisible(false);
 
     this.storePopupSeparator = this.add.graphics()
-      .lineStyle(1, 0x2a3a5c, 0.6)
+      .lineStyle(1, 0x3a3428, 0.6)
       .lineBetween(centerX - 180, centerY + 62, centerX + 180, centerY + 62)
       .setDepth(46)
       .setVisible(false);
 
     this.storePopupUpgradeBg = this.add
       .rectangle(centerX, centerY + 100, 350, 54, BUTTON_PRIMARY, 1)
-      .setStrokeStyle(2, 0x87a8ff)
+      .setStrokeStyle(2, 0xb89850)
       .setInteractive({ useHandCursor: true })
       .setDepth(46)
       .setVisible(false);
@@ -951,17 +951,17 @@ export class GameScene extends Phaser.Scene {
         }
       }
       if (!item.isUnlocked) {
-        card.bg.setFillStyle(item.isDeeplyLocked ? 0x0d1120 : STORE_CARD_LOCKED_BG, 1);
+        card.bg.setFillStyle(item.isDeeplyLocked ? 0x0e0c08 : STORE_CARD_LOCKED_BG, 1);
         card.bg.setStrokeStyle(2, STORE_CARD_LOCKED_BORDER);
-        card.imageBg.setFillStyle(item.isDeeplyLocked ? 0x151c2e : STORE_CARD_LOCKED_IMAGE_BG, 1);
-        card.imageBg.setStrokeStyle(1, 0x4a5879);
-        card.imageText.setColor(item.isDeeplyLocked ? '#5a6580' : '#8d9ab5');
+        card.imageBg.setFillStyle(item.isDeeplyLocked ? 0x16140e : STORE_CARD_LOCKED_IMAGE_BG, 1);
+        card.imageBg.setStrokeStyle(1, 0x4a4030);
+        card.imageText.setColor(item.isDeeplyLocked ? '#5a5442' : '#8a7e66');
         if (hasSprite && !item.isDeeplyLocked) {
-          card.imageSprite!.setTint(0x667799);
+          card.imageSprite!.setTint(0x887755);
           card.imageSprite!.setAlpha(0.6);
         }
         card.titleText.setText(item.isDeeplyLocked ? '???' : item.title);
-        card.titleText.setColor(item.isDeeplyLocked ? '#5a6580' : '#b1bad0');
+        card.titleText.setColor(item.isDeeplyLocked ? '#5a5442' : '#b8a880');
         card.pipsText.setVisible(false);
         card.levelText.setVisible(false);
         card.lockText.setText('🔒');
@@ -972,14 +972,14 @@ export class GameScene extends Phaser.Scene {
         card.bg.setFillStyle(STORE_CARD_BG, 1);
         card.bg.setStrokeStyle(2, STORE_CARD_BORDER);
         card.imageBg.setFillStyle(STORE_CARD_IMAGE_BG, 1);
-        card.imageBg.setStrokeStyle(1, 0x6178ad);
-        card.imageText.setColor('#d9e5ff');
+        card.imageBg.setStrokeStyle(1, 0x6b5a38);
+        card.imageText.setColor('#ddd4b8');
         if (hasSprite) {
           card.imageSprite!.clearTint();
           card.imageSprite!.setAlpha(1);
         }
         card.titleText.setText(item.title);
-        card.titleText.setColor('#f3f6ff');
+        card.titleText.setColor('#f5edd8');
         card.lockText.setVisible(false);
         card.levelText.setVisible(false);
         // Pips — positioned dynamically below title
@@ -992,7 +992,7 @@ export class GameScene extends Phaser.Scene {
         if (item.isMaxed) {
           card.pipsText.setColor('#ffd700');
         } else {
-          card.pipsText.setColor('#c8d4f0');
+          card.pipsText.setColor('#c4b898');
         }
         // Cost badge
         card.costBadgeBg.setVisible(true);
@@ -1003,12 +1003,12 @@ export class GameScene extends Phaser.Scene {
           card.costBadgeBg.setFillStyle(0x2a2510, 1);
         } else if (item.nextCost === null) {
           card.costText.setText('---');
-          card.costText.setColor('#aeb8d1');
-          card.costBadgeBg.setFillStyle(0x151b2e, 1);
+          card.costText.setColor('#a89878');
+          card.costBadgeBg.setFillStyle(0x18160e, 1);
         } else {
           card.costText.setText(`${item.nextCost} p.`);
           card.costText.setColor('#ffd892');
-          card.costBadgeBg.setFillStyle(0x151b2e, 1);
+          card.costBadgeBg.setFillStyle(0x18160e, 1);
         }
       }
     });
@@ -1032,7 +1032,7 @@ export class GameScene extends Phaser.Scene {
       this.storePopupImageSprite!.setVisible(true);
       this.storePopupImageText.setVisible(false);
       if (!selected.isUnlocked) {
-        this.storePopupImageSprite!.setTint(0x667799);
+        this.storePopupImageSprite!.setTint(0x887755);
         this.storePopupImageSprite!.setAlpha(0.6);
       } else {
         this.storePopupImageSprite!.clearTint();
@@ -1050,11 +1050,11 @@ export class GameScene extends Phaser.Scene {
         this.storePopupLevelText.setColor('#ffd700');
       } else {
         this.storePopupLevelText.setText(`Niveau ${selected.level}/${selected.maxLevel}`);
-        this.storePopupLevelText.setColor('#8a9cc0');
+        this.storePopupLevelText.setColor('#8a7e66');
       }
     } else {
       this.storePopupLevelText.setText('🔒 Verrouillé');
-      this.storePopupLevelText.setColor('#6b7a9e');
+      this.storePopupLevelText.setColor('#6b6050');
     }
     this.storePopupDescriptionText.setText(
       selected.isDeeplyLocked ? 'Talent mystère' : selected.description,
@@ -1141,10 +1141,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private drawBoard() {
-    this.graphics.fillStyle(0x1a2233, 1);
+    this.graphics.fillStyle(0x1e1c14, 1);
     this.graphics.fillRect(BOARD_OFFSET_X, BOARD_OFFSET_Y, BOARD_WIDTH, BOARD_HEIGHT);
 
-    this.graphics.lineStyle(1, 0x2f3a55, 0.5);
+    this.graphics.lineStyle(1, 0x3a3528, 0.35);
     for (let c = 0; c <= GRID.cols; c += 1) {
       const x = BOARD_OFFSET_X + c * CELL_SIZE;
       this.graphics.lineBetween(x, BOARD_OFFSET_Y, x, BOARD_OFFSET_Y + BOARD_HEIGHT);
@@ -1197,9 +1197,9 @@ export class GameScene extends Phaser.Scene {
     const dir = this.runState.direction;
     const total = slug.length;
 
-    // Color gradient: bright lime head -> dark olive tail
-    const headColor = { r: 0x9d, g: 0xe8, b: 0x7a };
-    const tailColor = { r: 0x2e, g: 0x62, b: 0x2e };
+    // Color gradient: warm golden-olive head -> dark olive-brown tail
+    const headColor = { r: 0xc4, g: 0xa8, b: 0x48 };
+    const tailColor = { r: 0x5a, g: 0x4a, b: 0x28 };
 
     const lerpColor = (t: number) => {
       const r = Math.round(headColor.r + (tailColor.r - headColor.r) * t);
@@ -1245,6 +1245,13 @@ export class GameScene extends Phaser.Scene {
       const radius = Math.round(CELL_SIZE * (0.46 - t * 0.24));
       this.graphics.fillStyle(color, 1);
       this.graphics.fillCircle(cx, cy, radius);
+
+      // Darker olive spots on body segments (not head)
+      if (i >= 1 && i <= 3) {
+        this.graphics.fillStyle(0x7a6a30, 0.7);
+        const spotOff = (i % 2 === 1) ? 2 : -2;
+        this.graphics.fillCircle(cx + spotOff, cy - 1, 2);
+      }
     }
 
     // Eyes on head
@@ -1272,6 +1279,38 @@ export class GameScene extends Phaser.Scene {
     this.graphics.fillStyle(0x111111, 1);
     this.graphics.fillCircle(ex1, ey1, 1.5);
     this.graphics.fillCircle(ex2, ey2, 1.5);
+
+    // Rosy cheeks — below and outside the eyes
+    this.graphics.fillStyle(0xe07860, 0.4);
+    if (dir === 'right' || dir === 'left') {
+      this.graphics.fillCircle(ex1 - (dir === 'right' ? 2 : -2), ey1 + 3, 2.5);
+      this.graphics.fillCircle(ex2 - (dir === 'right' ? 2 : -2), ey2 - 3, 2.5);
+    } else {
+      this.graphics.fillCircle(ex1 + 3, ey1 - (dir === 'down' ? 2 : -2), 2.5);
+      this.graphics.fillCircle(ex2 - 3, ey2 - (dir === 'down' ? 2 : -2), 2.5);
+    }
+
+    // Antennae — two stalks extending forward from head with round tips
+    const antennaLen = 7;
+    const antennaSpread = 4;
+    this.graphics.fillStyle(0xa08838, 1);
+    let a1x: number, a1y: number, a2x: number, a2y: number;
+    if (dir === 'right' || dir === 'left') {
+      const fwd = dir === 'right' ? 1 : -1;
+      a1x = headCx + fwd * antennaLen; a1y = headCy - antennaSpread;
+      a2x = headCx + fwd * antennaLen; a2y = headCy + antennaSpread;
+      this.graphics.fillRect(headCx + fwd * 2 - 1, headCy - antennaSpread - 1, Math.abs(antennaLen - 2), 2);
+      this.graphics.fillRect(headCx + fwd * 2 - 1, headCy + antennaSpread - 1, Math.abs(antennaLen - 2), 2);
+    } else {
+      const fwd = dir === 'down' ? 1 : -1;
+      a1x = headCx - antennaSpread; a1y = headCy + fwd * antennaLen;
+      a2x = headCx + antennaSpread; a2y = headCy + fwd * antennaLen;
+      this.graphics.fillRect(headCx - antennaSpread - 1, headCy + fwd * 2 - 1, 2, Math.abs(antennaLen - 2));
+      this.graphics.fillRect(headCx + antennaSpread - 1, headCy + fwd * 2 - 1, 2, Math.abs(antennaLen - 2));
+    }
+    // Round antenna tips
+    this.graphics.fillCircle(a1x, a1y, 2);
+    this.graphics.fillCircle(a2x, a2y, 2);
   }
 
   private drawFriendOrb(cx: number, cy: number) {
@@ -1318,7 +1357,7 @@ export class GameScene extends Phaser.Scene {
     this.graphics.fillCircle(cx - 2, cy - 5, 2.5);
 
     // Socket — small grey rounded rect below bulb
-    this.graphics.fillStyle(0x8899aa, 1);
+    this.graphics.fillStyle(0x8a7a5a, 1);
     this.graphics.fillRoundedRect(cx - 3, cy + 4, 6, 4, 1);
   }
 
@@ -1326,7 +1365,7 @@ export class GameScene extends Phaser.Scene {
     const head = this.runState.slug[0];
     const radius = getCurrentVisionRadius(this.runState, this.time.now);
 
-    this.graphics.fillStyle(0x05070c, 1);
+    this.graphics.fillStyle(0x0a0906, 1);
     for (let y = 0; y < GRID.rows; y += 1) {
       for (let x = 0; x < GRID.cols; x += 1) {
         if (isVisibleFromHead({ x, y }, head, radius)) {

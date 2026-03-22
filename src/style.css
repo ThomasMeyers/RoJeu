@@ -4,7 +4,7 @@ body {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  background: radial-gradient(circle at top, #1a2030 0%, #0d1119 65%);
+  background: radial-gradient(circle at top, #1e1a12 0%, #100e08 65%);
   font-family: Arial, sans-serif;
 }
 

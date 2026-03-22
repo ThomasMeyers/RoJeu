@@ -39,7 +39,7 @@ const visionClarityOrbPickup: PickupDefinition = {
     ],
   }),
   renderToken: 'VO',
-  color: 0xffffff,
+  color: 0xf5d070,
 };
 
 const SPEED_BOOST_EFFECT_ID = 'speed_boost';
@@ -69,7 +69,7 @@ const speedBoostOrbPickup: PickupDefinition = {
     ],
   }),
   renderToken: 'KW',
-  color: 0x111111,
+  color: 0x4a3520,
 };
 
 export const PICKUP_CATALOG: PickupDefinition[] = [visionClarityOrbPickup, speedBoostOrbPickup];
