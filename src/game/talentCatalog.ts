@@ -16,6 +16,7 @@ export interface TalentCatalogEntry {
   title: string;
   description: string;
   imageToken: string;
+  imageAsset?: string;
   maxLevel: number;
   costsByLevel: number[];
   isAvailable: boolean;
@@ -31,6 +32,7 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     title: 'Bave baveuse',
     description: "Augmente les points d'orb de +10% par niveau.",
     imageToken: 'BB',
+    imageAsset: 'talent_orb_yield',
     maxLevel: 5,
     costsByLevel: [300, 450, 700, 1000, 1400],
     isAvailable: true,
@@ -51,6 +53,7 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     description:
       'Tu te mets a chantonner des tubes de chanson francaise pour un maximum de deplaisir. + 1 point / s tant que tu restes en vie',
     imageToken: 'CA',
+    imageAsset: 'talent_passive_income',
     maxLevel: 5,
     costsByLevel: [300, 450, 700, 1000, 1400],
     isAvailable: true,
@@ -70,6 +73,7 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     title: 'Filsdeputemalumiere',
     description: "Fais apparaitre des bonus qui te permettront d'y voir plus clair. Pendant un temps.",
     imageToken: 'LM',
+    imageAsset: 'talent_vision_bonus_orb',
     maxLevel: 5,
     costsByLevel: [300, 450, 700, 1000, 1400],
     isAvailable: true,
@@ -90,6 +94,7 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     description:
       'Around the world around the world. Around the world, around the world. Around the world ? Around the world !',
     imageToken: 'ATW',
+    imageAsset: 'talent_no_walls',
     maxLevel: 1,
     costsByLevel: [5000],
     isAvailable: true,
@@ -112,6 +117,7 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     description:
       'Prends ta dose pour te faire aller plus vite pendant un temps donné. Mais attention au crash.',
     imageToken: 'KW',
+    imageAsset: 'talent_speed_boost_pickup',
     maxLevel: 5,
     costsByLevel: [300, 450, 700, 1000, 1400],
     isAvailable: true,

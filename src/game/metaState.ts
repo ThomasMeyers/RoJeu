@@ -8,6 +8,7 @@ export interface TalentStoreItem {
   title: string;
   description: string;
   imageToken: string;
+  imageAsset?: string;
   level: number;
   maxLevel: number;
   nextCost: number | null;
@@ -171,6 +172,7 @@ export const getStoreTalentItems = (meta: MetaState): TalentStoreItem[] =>
       title: talent.title,
       description: talent.description,
       imageToken: talent.imageToken,
+      imageAsset: talent.imageAsset,
       level,
       maxLevel: talent.maxLevel,
       nextCost,

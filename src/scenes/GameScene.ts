@@ -11,6 +11,7 @@ import { ensureOrbSpawn } from '../game/spawnSystem';
 import { getPickupDefinitionById } from '../game/pickupCatalog';
 import type { Direction, GridSize, MetaState, RunState } from '../game/types';
 import { isVisibleFromHead } from '../game/visibility';
+import { TALENT_CATALOG } from '../game/talentCatalog';
 
 const GRID: GridSize = { cols: 20, rows: 20 };
 const CELL_SIZE = 24;
@@ -43,6 +44,7 @@ interface StoreCardUi {
   bg: Phaser.GameObjects.Rectangle;
   imageBg: Phaser.GameObjects.Rectangle;
   imageText: Phaser.GameObjects.Text;
+  imageSprite: Phaser.GameObjects.Image | null;
   pipsText: Phaser.GameObjects.Text;
   titleText: Phaser.GameObjects.Text;
   levelText: Phaser.GameObjects.Text;
@@ -123,6 +125,8 @@ export class GameScene extends Phaser.Scene {
 
   private storePopupImageText!: Phaser.GameObjects.Text;
 
+  private storePopupImageSprite: Phaser.GameObjects.Image | null = null;
+
   private storePopupTitleText!: Phaser.GameObjects.Text;
 
   private storePopupDescriptionText!: Phaser.GameObjects.Text;
@@ -161,6 +165,14 @@ export class GameScene extends Phaser.Scene {
 
   constructor() {
     super('GameScene');
+  }
+
+  preload() {
+    for (const talent of TALENT_CATALOG) {
+      if (talent.imageAsset) {
+        this.load.image(talent.imageAsset, `assets/talents/${talent.id}.png`);
+      }
+    }
   }
 
   create() {
@@ -575,6 +587,16 @@ export class GameScene extends Phaser.Scene {
           .setDepth(43)
           .setVisible(false);
 
+        let imageSprite: Phaser.GameObjects.Image | null = null;
+        if (item.imageAsset && this.textures.exists(item.imageAsset)) {
+          imageSprite = this.add
+            .image(cardCenterX, cardY + imgOffsetY, item.imageAsset)
+            .setDisplaySize(imgSize, imgSize)
+            .setOrigin(0.5)
+            .setDepth(43)
+            .setVisible(false);
+        }
+
         const pipsText = this.add
           .text(cardCenterX, cardY + 50, '', {
             fontFamily: 'Arial, sans-serif',
@@ -643,6 +665,7 @@ export class GameScene extends Phaser.Scene {
           bg,
           imageBg,
           imageText,
+          imageSprite,
           pipsText,
           titleText,
           levelText,
@@ -677,13 +700,13 @@ export class GameScene extends Phaser.Scene {
       .setVisible(false);
 
     this.storePopupBg = this.add
-      .rectangle(centerX, centerY + 8, 360, 262, STORE_POPUP_BG, 1)
+      .rectangle(centerX, centerY + 4, 400, 290, STORE_POPUP_BG, 1)
       .setStrokeStyle(2, 0x4f618d)
       .setDepth(45)
       .setVisible(false);
 
     this.storePopupCloseText = this.add
-      .text(centerX + 164, centerY - 110, 'X', {
+      .text(centerX + 184, centerY - 126, 'X', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '17px',
         color: '#ffffff',
@@ -701,59 +724,67 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.storePopupImageBg = this.add
-      .rectangle(centerX - 132, centerY - 76, 78, 78, STORE_CARD_IMAGE_BG, 1)
+      .rectangle(centerX - 115, centerY - 24, 140, 140, STORE_CARD_IMAGE_BG, 1)
       .setStrokeStyle(1, 0x6178ad)
       .setDepth(46)
       .setVisible(false);
 
     this.storePopupImageText = this.add
-      .text(centerX - 132, centerY - 76, '', {
+      .text(centerX - 115, centerY - 24, '', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '22px',
+        fontSize: '28px',
         color: '#d9e5ff',
       })
       .setOrigin(0.5)
       .setDepth(47)
       .setVisible(false);
 
+    this.storePopupImageSprite = this.add
+      .image(centerX - 115, centerY - 24, '__DEFAULT')
+      .setDisplaySize(140, 140)
+      .setOrigin(0.5)
+      .setDepth(47)
+      .setVisible(false);
+
     this.storePopupTitleText = this.add
-      .text(centerX - 74, centerY - 94, '', {
+      .text(centerX - 30, centerY - 92, '', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '18px',
+        fontSize: '20px',
         color: '#f2f6ff',
-        wordWrap: { width: 236 },
+        fontStyle: 'bold',
+        wordWrap: { width: 210 },
       })
       .setDepth(46)
       .setVisible(false);
 
     this.storePopupLevelText = this.add
-      .text(centerX - 74, centerY - 72, '', {
+      .text(centerX - 30, centerY - 68, '', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '13px',
+        fontSize: '14px',
         color: '#8a9cc0',
       })
       .setDepth(46)
       .setVisible(false);
 
     this.storePopupDescriptionText = this.add
-      .text(centerX - 132, centerY - 24, '', {
+      .text(centerX - 30, centerY - 44, '', {
         fontFamily: 'Arial, sans-serif',
-        fontSize: '14px',
+        fontSize: '13px',
         color: '#c4d0e8',
         align: 'left',
-        wordWrap: { width: 300 },
+        wordWrap: { width: 210 },
       })
       .setDepth(46)
       .setVisible(false);
 
     this.storePopupSeparator = this.add.graphics()
       .lineStyle(1, 0x2a3a5c, 0.6)
-      .lineBetween(centerX - 132, centerY + 55, centerX + 132, centerY + 55)
+      .lineBetween(centerX - 180, centerY + 62, centerX + 180, centerY + 62)
       .setDepth(46)
       .setVisible(false);
 
     this.storePopupUpgradeBg = this.add
-      .rectangle(centerX, centerY + 88, 284, 64, BUTTON_PRIMARY, 1)
+      .rectangle(centerX, centerY + 100, 350, 54, BUTTON_PRIMARY, 1)
       .setStrokeStyle(2, 0x87a8ff)
       .setInteractive({ useHandCursor: true })
       .setDepth(46)
@@ -772,12 +803,12 @@ export class GameScene extends Phaser.Scene {
     );
 
     this.storePopupUpgradeText = this.add
-      .text(centerX, centerY + 88, '', {
+      .text(centerX, centerY + 100, '', {
         fontFamily: 'Arial, sans-serif',
         fontSize: '15px',
         color: '#ffffff',
         align: 'center',
-        wordWrap: { width: 252 },
+        wordWrap: { width: 320 },
       })
       .setOrigin(0.5)
       .setDepth(47)
@@ -816,6 +847,7 @@ export class GameScene extends Phaser.Scene {
     card.bg.setVisible(visible);
     card.imageBg.setVisible(visible);
     card.imageText.setVisible(visible);
+    if (card.imageSprite) card.imageSprite.setVisible(visible);
     card.pipsText.setVisible(visible);
     card.titleText.setVisible(visible);
     card.levelText.setVisible(visible);
@@ -842,6 +874,7 @@ export class GameScene extends Phaser.Scene {
     this.storePopupCloseText.setVisible(visible);
     this.storePopupImageBg.setVisible(visible);
     this.storePopupImageText.setVisible(visible);
+    if (this.storePopupImageSprite) this.storePopupImageSprite.setVisible(false);
     this.storePopupTitleText.setVisible(visible);
     this.storePopupLevelText.setVisible(visible);
     this.storePopupDescriptionText.setVisible(visible);
@@ -889,16 +922,26 @@ export class GameScene extends Phaser.Scene {
       card.bg.setY(displayY);
       card.imageBg.setY(displayY + this.storeImgOffsetY);
       card.imageText.setY(displayY + this.storeImgOffsetY);
+      if (card.imageSprite) card.imageSprite.setY(displayY + this.storeImgOffsetY);
       card.titleText.setY(displayY + this.storeTitleOffsetY);
       card.levelText.setY(displayY + this.storeLevelOffsetY);
       card.lockText.setY(displayY + this.storeBadgeOffsetY);
       card.costBadgeBg.setY(displayY + this.storeCostBadgeOffsetY);
       card.costText.setY(displayY + this.storeCostBadgeOffsetY);
 
+      const hasSprite = !!card.imageSprite;
       if (!item.isUnlocked && item.isDeeplyLocked) {
         card.imageText.setText('?');
+        if (hasSprite) {
+          card.imageSprite!.setVisible(false);
+          card.imageText.setVisible(true);
+        }
       } else {
         card.imageText.setText(item.imageToken);
+        if (hasSprite) {
+          card.imageSprite!.setVisible(true);
+          card.imageText.setVisible(false);
+        }
       }
       if (!item.isUnlocked) {
         card.bg.setFillStyle(item.isDeeplyLocked ? 0x0d1120 : STORE_CARD_LOCKED_BG, 1);
@@ -906,6 +949,10 @@ export class GameScene extends Phaser.Scene {
         card.imageBg.setFillStyle(item.isDeeplyLocked ? 0x151c2e : STORE_CARD_LOCKED_IMAGE_BG, 1);
         card.imageBg.setStrokeStyle(1, 0x4a5879);
         card.imageText.setColor(item.isDeeplyLocked ? '#5a6580' : '#8d9ab5');
+        if (hasSprite && !item.isDeeplyLocked) {
+          card.imageSprite!.setTint(0x667799);
+          card.imageSprite!.setAlpha(0.6);
+        }
         card.titleText.setText(item.isDeeplyLocked ? '???' : item.title);
         card.titleText.setColor(item.isDeeplyLocked ? '#5a6580' : '#b1bad0');
         card.pipsText.setVisible(false);
@@ -920,6 +967,10 @@ export class GameScene extends Phaser.Scene {
         card.imageBg.setFillStyle(STORE_CARD_IMAGE_BG, 1);
         card.imageBg.setStrokeStyle(1, 0x6178ad);
         card.imageText.setColor('#d9e5ff');
+        if (hasSprite) {
+          card.imageSprite!.clearTint();
+          card.imageSprite!.setAlpha(1);
+        }
         card.titleText.setText(item.title);
         card.titleText.setColor('#f3f6ff');
         card.lockText.setVisible(false);
@@ -967,7 +1018,24 @@ export class GameScene extends Phaser.Scene {
       this.closeStoreTalentDetails();
       return;
     }
-    this.storePopupImageText.setText(selected.isDeeplyLocked ? '?' : selected.imageToken);
+    const popupHasSprite = !!selected.imageAsset && this.textures.exists(selected.imageAsset);
+    if (popupHasSprite && !selected.isDeeplyLocked) {
+      this.storePopupImageSprite!.setTexture(selected.imageAsset!);
+      this.storePopupImageSprite!.setDisplaySize(140, 140);
+      this.storePopupImageSprite!.setVisible(true);
+      this.storePopupImageText.setVisible(false);
+      if (!selected.isUnlocked) {
+        this.storePopupImageSprite!.setTint(0x667799);
+        this.storePopupImageSprite!.setAlpha(0.6);
+      } else {
+        this.storePopupImageSprite!.clearTint();
+        this.storePopupImageSprite!.setAlpha(1);
+      }
+    } else {
+      this.storePopupImageText.setText(selected.isDeeplyLocked ? '?' : selected.imageToken);
+      this.storePopupImageText.setVisible(true);
+      if (this.storePopupImageSprite) this.storePopupImageSprite.setVisible(false);
+    }
     this.storePopupTitleText.setText(selected.isDeeplyLocked ? '???' : selected.title);
     if (selected.isUnlocked) {
       if (selected.isMaxed) {
