@@ -4,7 +4,7 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 
 ## Read In This Order
 
-1. `AGENTS.md` (guardrails and scope)
+1. `CLAUDE.md` (guardrails and scope)
 2. `README.md` (product scope and current milestones)
 3. `docs/architecture.md` (module map and data flow)
 4. `docs/agent-playbooks.md` (task-based execution guide)
@@ -39,6 +39,7 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - Store cards, popup, click behavior -> `src/scenes/GameScene.ts`, `src/game/metaState.ts`
 - Talent definitions, availability, costs -> `src/game/talentCatalog.ts`
 - Effect computation and run stat modifiers -> `src/game/effects/schema.ts`, `src/game/effects/engine.ts`
+- Talent images, art, icons -> `docs/talent-art-guide.md`
 
 ## Known Gotchas
 

@@ -173,6 +173,13 @@ export class GameScene extends Phaser.Scene {
         this.load.image(talent.imageAsset, `assets/talents/${talent.id}.png`);
       }
     }
+    this.load.on('complete', () => {
+      for (const talent of TALENT_CATALOG) {
+        if (talent.imageAsset && this.textures.exists(talent.imageAsset)) {
+          this.textures.get(talent.imageAsset).setFilter(Phaser.Textures.FilterMode.LINEAR);
+        }
+      }
+    });
   }
 
   create() {
