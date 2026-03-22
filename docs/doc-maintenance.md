@@ -5,7 +5,7 @@ Use this checklist after substantial code changes.
 ## Mandatory
 
 - Update `README.md` if feature scope/user-facing behavior changed.
-- Update `START_HERE_FOR_AGENTS.md` if entrypoints, modules, or terminology changed.
+- Update `START_HERE_FOR_CLAUDE.md` if entrypoints, modules, or terminology changed.
 - Update `docs/architecture.md` if module responsibilities or core flow changed.
 
 ## Conditional

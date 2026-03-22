@@ -18,7 +18,7 @@ Projet perso de mini-jeu web inspiré de Snake, avec une direction visuelle "lim
 - Preview locale: `npm run preview`
 
 ## Agent Quickstart
-- Point d'entree rapide: `START_HERE_FOR_AGENTS.md`
+- Point d'entree rapide: `START_HERE_FOR_CLAUDE.md`
 - Architecture technique: `docs/architecture.md`
 - Workflows d'intervention: `docs/agent-playbooks.md`
 - Journal des decisions: `docs/adr/`

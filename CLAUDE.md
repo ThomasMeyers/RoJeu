@@ -9,6 +9,7 @@
 - Point d'entree: `START_HERE_FOR_AGENTS.md`
 - Carte technique: `docs/architecture.md`
 - Playbooks d'intervention: `docs/agent-playbooks.md`
+- Guide creation talents + images: `docs/talent-art-guide.md`
 - Maintenance documentaire: `docs/doc-maintenance.md`
 - Decisions techniques: `docs/adr/`
 
