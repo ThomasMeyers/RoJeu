@@ -6,10 +6,10 @@ export interface TalentUnlockRequirement {
 export type TalentUnlockRule =
   | { type: 'always' }
   | {
-      type: 'requires_talents_all';
-      requirements: TalentUnlockRequirement[];
-      requirementText: string;
-    };
+    type: 'requires_talents_all';
+    requirements: TalentUnlockRequirement[];
+    requirementText: string;
+  };
 
 export interface TalentCatalogEntry {
   id: string;
@@ -86,9 +86,9 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
   },
   {
     id: 'no_walls',
-    title: 'around the world',
+    title: 'Around the world',
     description:
-      'Around the world around the world. Around the world around the world. Around the world ? Around the world !',
+      'Around the world around the world. Around the world, around the world. Around the world ? Around the world !',
     imageToken: 'ATW',
     maxLevel: 1,
     costsByLevel: [5000],
@@ -108,9 +108,9 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
   },
   {
     id: 'speed_boost_pickup',
-    title: 'Speed Boost Pickup',
+    title: 'Ptit kawa ou kwa ?',
     description:
-      'Spawns a speed boost collectible. On pickup: +50% speed for 10s, then -50% speed for 5s. Re-picking during either effect resets the boost and cancels the debuff.',
+      'Prends ta dose pour te faire aller plus vite pendant un temps donné. Mais attention au crash.',
     imageToken: 'KW',
     maxLevel: 5,
     costsByLevel: [300, 450, 700, 1000, 1400],
@@ -129,31 +129,5 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     },
     storeRow: 3,
     storeOrder: 1,
-  },
-  {
-    id: 'prototype_slot_a',
-    title: 'Be like momo',
-    description: 'Prototype reserve pour plus tard.',
-    imageToken: 'BM',
-    maxLevel: 5,
-    costsByLevel: [250, 400, 600, 900, 1300],
-    isAvailable: false,
-    effectIdsByLevel: ['', '', '', '', ''],
-    unlockRule: { type: 'always' },
-    storeRow: 3,
-    storeOrder: 1,
-  },
-  {
-    id: 'prototype_slot_b',
-    title: 'Heures supplementaires',
-    description: 'Prototype reserve pour plus tard.',
-    imageToken: 'HS',
-    maxLevel: 5,
-    costsByLevel: [250, 400, 600, 900, 1300],
-    isAvailable: false,
-    effectIdsByLevel: ['', '', '', '', ''],
-    unlockRule: { type: 'always' },
-    storeRow: 3,
-    storeOrder: 2,
-  },
+  }
 ];

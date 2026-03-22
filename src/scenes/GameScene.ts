@@ -147,7 +147,7 @@ export class GameScene extends Phaser.Scene {
 
   private storeBadgeOffsetY = 0;
 
-  private storePipsOffsetY = 0;
+
 
   private storeLevelOffsetY = 0;
 
@@ -469,7 +469,7 @@ export class GameScene extends Phaser.Scene {
     const topBound = BOARD_OFFSET_Y + STORE_HEADER_H;
     const firstRowCenterY = Math.max(
       Math.round(cardsAreaCenterY - totalRowsHeight / 2 + cardHeight / 2),
-      topBound + cardHeight / 2,
+      topBound + cardHeight / 2 + 8,
     );
 
     this.storeOverlayBg = this.add
@@ -576,7 +576,7 @@ export class GameScene extends Phaser.Scene {
           .setVisible(false);
 
         const pipsText = this.add
-          .text(cardCenterX, cardY + 8, '', {
+          .text(cardCenterX, cardY + 50, '', {
             fontFamily: 'Arial, sans-serif',
             fontSize: '14px',
             color: '#c8d4f0',
@@ -656,7 +656,7 @@ export class GameScene extends Phaser.Scene {
     // Store layout constants for use in refreshStoreUi.
     this.storeCardHeight = cardHeight;
     this.storeImgOffsetY = imgOffsetY;
-    this.storePipsOffsetY = 8;
+
     this.storeTitleOffsetY = titleOffsetY + 10;
     this.storeLevelOffsetY = titleOffsetY + 26;
     this.storeBadgeOffsetY = badgeOffsetY;
@@ -696,7 +696,7 @@ export class GameScene extends Phaser.Scene {
       'pointerdown',
       (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
         event.stopPropagation();
-      this.closeStoreTalentDetails();
+        this.closeStoreTalentDetails();
       },
     );
 
@@ -762,12 +762,12 @@ export class GameScene extends Phaser.Scene {
       'pointerdown',
       (_pointer: Phaser.Input.Pointer, _x: number, _y: number, event: Phaser.Types.Input.EventData) => {
         event.stopPropagation();
-      if (!this.selectedStoreTalentId) {
-        return;
-      }
-      if (upgradeTalentLevel(this.meta, this.selectedStoreTalentId)) {
-        this.refreshStoreUi();
-      }
+        if (!this.selectedStoreTalentId) {
+          return;
+        }
+        if (upgradeTalentLevel(this.meta, this.selectedStoreTalentId)) {
+          this.refreshStoreUi();
+        }
       },
     );
 
@@ -889,7 +889,6 @@ export class GameScene extends Phaser.Scene {
       card.bg.setY(displayY);
       card.imageBg.setY(displayY + this.storeImgOffsetY);
       card.imageText.setY(displayY + this.storeImgOffsetY);
-      card.pipsText.setY(displayY + this.storePipsOffsetY);
       card.titleText.setY(displayY + this.storeTitleOffsetY);
       card.levelText.setY(displayY + this.storeLevelOffsetY);
       card.lockText.setY(displayY + this.storeBadgeOffsetY);
@@ -925,11 +924,12 @@ export class GameScene extends Phaser.Scene {
         card.titleText.setColor('#f3f6ff');
         card.lockText.setVisible(false);
         card.levelText.setVisible(false);
-        // Pips
+        // Pips — positioned dynamically below title
         const pipsFilled = '● '.repeat(item.level).trim();
         const pipsEmpty = '○ '.repeat(item.maxLevel - item.level).trim();
         const pips = (pipsFilled + (pipsFilled && pipsEmpty ? ' ' : '') + pipsEmpty);
         card.pipsText.setText(pips);
+        card.pipsText.setY(card.titleText.y + card.titleText.height / 2 + 10);
         card.pipsText.setVisible(true);
         if (item.isMaxed) {
           card.pipsText.setColor('#ffd700');
@@ -1300,7 +1300,7 @@ export class GameScene extends Phaser.Scene {
       case 'self_collision':
         return "Tu t'es percute toi-meme.";
       case 'timer_end':
-        return "Le temps est ecoule, Rogie s'est echappe.";
+        return "Le temps est ecoule, Rogie s'en est alle.";
       case 'no_lives':
         return "Tu n'as plus de vie.";
       case 'suicide':
@@ -1317,7 +1317,7 @@ export class GameScene extends Phaser.Scene {
         : Math.max(0, this.runState.endedAtMs - this.runState.startedAtMs);
     const survivalSec = Math.floor(survivalMs / 1000);
 
-    this.endTitleText.setText("L'important, c'est de faire de son mieux");
+    this.endTitleText.setText("L'important dans la vie, c'est de faire de son mieux");
     this.endSubtitleText.setText(this.resolveEndSubtitle());
     this.endStatsText.setText(
       `Points obtenus: ${this.runState.score}\nPoints totaux: ${this.meta.totalPoints}\nTemps de survie: ${survivalSec}s`,
