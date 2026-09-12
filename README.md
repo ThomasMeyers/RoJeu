@@ -3,22 +3,40 @@
 Projet perso de mini-jeu web inspiré de Snake, avec une direction visuelle "limace + trainee de bave".
 
 ## Objectif
-- Livrer un MVP jouable sur mobile et ordinateur via une URL publique.
-- Garder une implementation simple a maintenir (pas de backend obligatoire pour le MVP).
+- Livrer un jeu jouable sur ordinateur, partage en clonant ce depot et en le lancant en local.
+- Garder une implementation simple a maintenir (pas de backend, pas de deploiement).
 
-## Stack cible (simple et robuste)
-- Frontend: TypeScript + Vite + moteur 2D leger (Phaser).
-- Plateforme: web responsive (orientation portrait/paysage).
-- Hebergement: statique (Cloudflare Pages, Netlify ou Vercel).
+## Perimetre (decide le 12/09/2026)
+- Cible unique: desktop au clavier. Le support mobile / tactile est abandonne.
+- Pas de publication ni d'URL publique: le partage se fait en donnant acces au depot prive,
+  le destinataire lance le jeu en local.
 
-## Lancement local (a implementer)
-- Installer les dependances: `npm install`
-- Demarrer en dev: `npm run dev`
-- Build de prod: `npm run build`
-- Preview locale: `npm run preview`
+## Stack
+- Frontend: TypeScript + Vite + Phaser 3.
+- Execution: serveur de dev Vite en local.
+
+## Lancement local
+
+Prerequis: Node.js 20+ (developpe sur Node 24) et npm.
+
+1. Cloner le depot et se placer dans le dossier du projet.
+2. Installer les dependances: `npm install`
+3. Demarrer le jeu: `npm run dev`, puis ouvrir l'URL affichee dans le terminal
+   (par defaut `http://localhost:5173`).
+
+Autres commandes:
+- Build de production: `npm run build`
+- Preview du build: `npm run preview`
+
+Controles clavier:
+- Direction: fleches directionnelles, ou le bloc de touches WASD
+  (soit **ZQSD** sur un clavier AZERTY: le binding se fait sur la position physique
+  de la touche, pas sur la lettre imprimee)
+- `R`: relancer un run
+- `Espace`: pause / reprise pendant un run
 
 ## Agent Quickstart
-- Point d'entree rapide: `START_HERE_FOR_CLAUDE.md`
+- Point d'entree rapide: `START_HERE_FOR_AGENTS.md`
 - Architecture technique: `docs/architecture.md`
 - Workflows d'intervention: `docs/agent-playbooks.md`
 - Journal des decisions: `docs/adr/`
@@ -31,26 +49,17 @@ Projet perso de mini-jeu web inspiré de Snake, avec une direction visuelle "lim
 2. Limace jouable (a la place du serpent) + score.
 3. Effet visuel de trainee de bave.
 4. Interface simple (ecran d'accueil, score courant, restart).
-5. Controles clavier + tactile (swipe) pour mobile/desktop.
+5. Controles clavier (desktop).
 
 ### Bonus par paliers
 - Palier 1: nourritures differenciees (score variable, effet visuel simple).
 - Palier 2: bonus temporaires (boost vitesse, ralenti, mini invincibilite).
 - Palier 3: variantes fun (obstacles, mode chrono, skins).
 
-### Hebergement recommande
-- Option par defaut: deploy statique sur Cloudflare Pages (simple, rapide, gratuit pour ce besoin).
-- Alternative equivalente: Netlify ou Vercel.
-
-## Roadmap rapide
-- Etape 1: scaffolding du projet + scene de base jouable.
-- Etape 2: direction artistique minimale (limace + bave).
-- Etape 3: paliers de bonus selon temps disponible.
-- Etape 4: polish mobile + publication.
-
 ## Backlog
 - Definir puis implementer l'ecran de lancement principal (avant la pre-run).
-- Definir une procedure "safe push" pour separer compte perso/pro avant publication distante.
+- Ajouter des tests unitaires sur la logique de grille / collision.
+- Decouper `src/scenes/GameScene.ts` (rendu / HUD / store / input).
 
 ## UX pass (clean/minimal)
 - Hierarchie visuelle des phases `waiting_start`, `running`, `ended` clarifiee.
@@ -68,5 +77,4 @@ Projet perso de mini-jeu web inspiré de Snake, avec une direction visuelle "lim
 - Les effets gameplay sont appliques via `effectIdsByLevel` (score passif, multiplicateurs, spawn de pickups, suppression permanente des murs avec `no_walls`).
 
 ## Backlog UI futur
-- Ecran principal de lancement avant la pre-run.
 - Accessibilite de base: contraste renforce, option taille de texte, mode daltonien simple.

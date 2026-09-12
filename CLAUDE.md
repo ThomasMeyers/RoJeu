@@ -2,6 +2,8 @@
 
 ## Scope
 - Travailler uniquement dans `Personal Projects/Snake/` pour ce projet.
+- Cible: desktop clavier. Pas de deploiement: le partage se fait par acces au depot prive,
+  le destinataire lance en local.
 - Ne pas melanger les conventions Apps Script avec ce jeu web.
 - Garder ce fichier court: regles de collaboration uniquement.
 
@@ -14,7 +16,7 @@
 - Decisions techniques: `docs/adr/`
 
 ## Priorites
-1. MVP jouable rapidement (desktop + mobile).
+1. Jeu jouable rapidement (desktop au clavier uniquement).
 2. Lisibilite du code et iteration rapide.
 3. Bonus uniquement apres stabilisation du gameplay de base.
 
@@ -27,13 +29,13 @@
 - Toute migration d'ID doit etre geree dans la normalisation du save (`metaState`) et documentee dans les docs agent/architecture.
 
 ## UX et gameplay
-- Controles clavier + tactile obligatoires.
+- Controles clavier uniquement. Le mobile / tactile est hors scope (decide le 12/09/2026).
 - Difficulte progressive simple (vitesse croissante).
 - Feedback visuel clair sur collisions, score et bonus actifs.
 
 ## Qualite
 - Ajouter des tests unitaires cibles sur la logique de grille/collision si possible.
-- Verifier le comportement sur ecran mobile avant publication.
+- Verifier `npm run build` et un cycle de run complet (`waiting_start -> running -> ended`) avant handoff.
 
 ## Regle de mise a jour docs
 - Si un changement modifie un flux, un module cle, ou un invariant gameplay/store, mettre a jour au minimum:

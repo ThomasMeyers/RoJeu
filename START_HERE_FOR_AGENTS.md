@@ -2,6 +2,16 @@
 
 This file is the fastest onboarding path for an agent working on `Personal Projects/Snake`.
 
+## Current Scope (decided 12/09/2026)
+
+- **Target: desktop keyboard only.** Mobile / touch support is out of scope and was never
+  implemented (no swipe handler exists) — do not add one without an explicit request.
+- **No deployment.** The game is shared by giving repo access; the recipient runs it locally
+  (`npm install`, `npm run dev`). Do not add hosting, CI, or deploy config.
+- Known gaps, tracked in `IMPLEMENTATION_PLAN.md` (M5): no automated tests, no lint/format
+  config, `src/scenes/GameScene.ts` is ~1440 lines, and the "slime trail" visual effect from the
+  original plan was never built.
+
 ## Read In This Order
 
 1. `CLAUDE.md` (guardrails and scope)
