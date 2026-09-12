@@ -8,9 +8,11 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
   implemented (no swipe handler exists) — do not add one without an explicit request.
 - **No deployment.** The game is shared by giving repo access; the recipient runs it locally
   (`npm install`, `npm run dev`). Do not add hosting, CI, or deploy config.
-- Known gaps, tracked in `IMPLEMENTATION_PLAN.md` (M5): no automated tests, no lint/format
-  config, `src/scenes/GameScene.ts` is ~1440 lines, and the "slime trail" visual effect from the
+- Known gaps, tracked in `IMPLEMENTATION_PLAN.md` (M5): no lint/format config,
+  `src/scenes/GameScene.ts` is ~1440 lines, and the "slime trail" visual effect from the
   original plan was never built.
+- Pure game logic is covered by Vitest (`src/game/*.test.ts`); `GameScene.ts` is not, so a
+  green suite does not prove the scene still renders — do a manual run check too.
 
 ## Read In This Order
 
@@ -65,6 +67,7 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 
 ## Quick Validation Before Handoff
 
+- `npm test` (unit tests on pure game logic)
 - `npm run build`
 - Verify one full run lifecycle: `waiting_start -> running -> ended`
 - Verify store flow: open -> inspect card -> upgrade -> close without side effects

@@ -34,7 +34,8 @@
 - Feedback visuel clair sur collisions, score et bonus actifs.
 
 ## Qualite
-- Ajouter des tests unitaires cibles sur la logique de grille/collision si possible.
+- La logique pure de `src/game/` est couverte par Vitest (`src/game/*.test.ts`): etendre la
+  suite quand cette logique change, et lancer `npm test` avant tout handoff.
 - Verifier `npm run build` et un cycle de run complet (`waiting_start -> running -> ended`) avant handoff.
 
 ## Regle de mise a jour docs

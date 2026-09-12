@@ -63,7 +63,7 @@ Critere de validation: identite visuelle limace perceptible sur desktop.
 
 ### M5 - Dette technique et ecran de lancement
 - [ ] Ecran de lancement principal (avant la pre-run).
-- [ ] Tests unitaires sur la logique pure (grille, collisions, bornes, effets, meta).
+- [x] Tests unitaires sur la logique pure (grille, collisions, bornes, effets, meta) via Vitest.
 - [ ] Decoupage de `src/scenes/GameScene.ts` (rendu / HUD / store / input).
 
 ## Risques a surveiller

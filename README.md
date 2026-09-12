@@ -25,6 +25,7 @@ Prerequis: Node.js 20+ (developpe sur Node 24) et npm.
    (par defaut `http://localhost:5173`).
 
 Autres commandes:
+- Tests unitaires: `npm test` (ou `npm run test:watch`)
 - Build de production: `npm run build`
 - Preview du build: `npm run preview`
 
@@ -58,7 +59,6 @@ Controles clavier:
 
 ## Backlog
 - Definir puis implementer l'ecran de lancement principal (avant la pre-run).
-- Ajouter des tests unitaires sur la logique de grille / collision.
 - Decouper `src/scenes/GameScene.ts` (rendu / HUD / store / input).
 
 ## UX pass (clean/minimal)

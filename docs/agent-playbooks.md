@@ -16,7 +16,7 @@ Use these task-driven playbooks to avoid wide exploration.
 1. Reproduce with current phase/inputs and identify if bug belongs to run logic or render logic.
 2. Patch `src/game/*` first for rule correctness.
 3. If visual mismatch remains, patch `src/scenes/GameScene.ts`.
-4. Run `npm run build`.
+4. Run `npm test`, then `npm run build`.
 
 ### Gotchas
 
@@ -36,7 +36,7 @@ Use these task-driven playbooks to avoid wide exploration.
 1. Verify whether issue is data state (`metaState`) or interaction/render (`GameScene`).
 2. Check store open/close and popup selection invariants.
 3. Guard against input propagation and hidden interactive layers.
-4. Run `npm run build`.
+4. Run `npm test`, then `npm run build`.
 
 ### Gotchas
 
@@ -60,7 +60,7 @@ Use these task-driven playbooks to avoid wide exploration.
 3. Set `imageAsset: 'talent_{id}'` in the catalog entry.
 4. Ensure `effectIdsByLevel` is present even if empty placeholders.
 5. Validate unlock behavior (`unlockRule`) and max behavior (`MAX`).
-6. Run `npm run build`.
+6. Run `npm test`, then `npm run build`.
 
 ### Gotchas
 
@@ -88,7 +88,7 @@ Use these task-driven playbooks to avoid wide exploration.
 5. Confirm run stat resolution reflects effect.
 6. If dynamic behavior is needed, add minimal hook in `runState.ts`.
 7. If the effect introduces pickups/buffs, define collect/spawn rules in `pickupCatalog.ts`.
-8. Run `npm run build` and perform one manual run check.
+8. Run `npm test`, then `npm run build`, and perform one manual run check.
 
 ### Gotchas
 

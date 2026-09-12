@@ -65,6 +65,26 @@ flowchart TD
 - Pickup collect actions can grant points and/or timed effects.
 - Timed effects are additive on matching stats and expire independently.
 
+## Test Coverage
+
+Unit tests live next to the module they cover, as `src/game/*.test.ts`, and run on Vitest
+(`npm test`). They cover pure logic only — anything that needs Phaser or the DOM is out of scope.
+
+- `boundary.test.ts`: `wall-kill` vs `wrap-around` resolution on every grid edge.
+- `effects/engine.test.ts`: stat aggregation, unknown-effect tolerance, per-pickup spawn chances.
+- `runState.test.ts`: phase transitions, direction queueing and reversal guard, wall/self collision,
+  life loss vs run end, timer expiry, orb scoring with multipliers, fractional point carry-over,
+  timed-effect vision and speed resolution.
+- `metaState.test.ts`: save loading and corrupt-save fallback, talent costs, unlock chains
+  (`no_walls` then `speed_boost_pickup`), purchase side effects, level clamping, store view models.
+
+Two things the suite deliberately does not prove:
+
+- `GameScene.ts` is untested (rendering, HUD, store UI, input wiring). A green suite is not a
+  substitute for one manual run check.
+- Spawn placement is random. Tests park an orb in a known cell so `ensureOrbSpawn` bails out early,
+  which keeps `stepRun` deterministic; do the same rather than stubbing `Math.random`.
+
 ## Extension Points
 
 - Add gameplay effect: define in `effects/schema.ts`, bind via `talentCatalog.ts`.
