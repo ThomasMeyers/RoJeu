@@ -59,7 +59,6 @@ Controles clavier:
 
 ## Backlog
 - Definir puis implementer l'ecran de lancement principal (avant la pre-run).
-- Decouper `src/scenes/GameScene.ts` (rendu / HUD / store / input).
 
 ## UX pass (clean/minimal)
 - Hierarchie visuelle des phases `waiting_start`, `running`, `ended` clarifiee.

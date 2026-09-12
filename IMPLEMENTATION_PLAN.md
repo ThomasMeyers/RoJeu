@@ -19,12 +19,12 @@ Creer un jeu web "snake detourne" autour d'une limace, fun et rapide a livrer, j
 ## Architecture cible (grosse maille)
 - `src/game/`: logique de grille, collisions, score, etat de partie.
 - `src/scenes/`: ecran accueil, scene gameplay, ecran game over.
-- `src/render/`: sprites simples, feedback visuel.
-- `src/input/`: clavier (desktop).
+- `src/render/`: geometrie du plateau, palette, dessin du plateau/limace/entites.
+- `src/input/`: clavier (desktop) + molette.
 - `src/ui/`: HUD score, meilleur score local, boutons restart/play.
 
-> Note: a ce jour, `src/render/`, `src/input/` et `src/ui/` n'existent pas; tout est concentre
-> dans `src/scenes/GameScene.ts`. Le decoupage est au backlog.
+> Note: ces quatre dossiers existent depuis le decoupage du 12/09/2026. `GameScene.ts` ne fait
+> plus que de l'orchestration.
 
 ## Backlog ordonne
 
@@ -64,10 +64,11 @@ Critere de validation: identite visuelle limace perceptible sur desktop.
 ### M5 - Dette technique et ecran de lancement
 - [ ] Ecran de lancement principal (avant la pre-run).
 - [x] Tests unitaires sur la logique pure (grille, collisions, bornes, effets, meta) via Vitest.
-- [ ] Decoupage de `src/scenes/GameScene.ts` (rendu / HUD / store / input).
+- [x] Decoupage de `src/scenes/GameScene.ts` (rendu / HUD / store / input): 1440 -> 182 lignes.
 
 ## Risques a surveiller
-- Concentration du code dans `GameScene.ts` (1440 lignes): cout de modification croissant.
+- Z-order implicite: les objets de l'ecran de fin et le bouton sudoku n'ont pas de `depth`
+  explicite, leur empilement depend de l'ordre de creation dans `GameScene.create()`.
 - Absence de tests automatises: seul `npm run build` valide aujourd'hui.
 - Scope creep des bonus avant stabilisation du coeur.
 

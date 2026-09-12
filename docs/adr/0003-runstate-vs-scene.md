@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted
+Accepted — refined by ADR 0004 (the scene no longer holds rendering and input itself).
 
 ## Context
 

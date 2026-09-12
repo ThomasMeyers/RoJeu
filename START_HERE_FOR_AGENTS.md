@@ -8,11 +8,13 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
   implemented (no swipe handler exists) — do not add one without an explicit request.
 - **No deployment.** The game is shared by giving repo access; the recipient runs it locally
   (`npm install`, `npm run dev`). Do not add hosting, CI, or deploy config.
-- Known gaps, tracked in `IMPLEMENTATION_PLAN.md` (M5): no lint/format config,
-  `src/scenes/GameScene.ts` is ~1440 lines, and the "slime trail" visual effect from the
-  original plan was never built.
-- Pure game logic is covered by Vitest (`src/game/*.test.ts`); `GameScene.ts` is not, so a
-  green suite does not prove the scene still renders — do a manual run check too.
+- Known gaps, tracked in `IMPLEMENTATION_PLAN.md` (M5): no lint/format config, and the
+  "slime trail" visual effect from the original plan was never built.
+- Pure game logic is covered by Vitest (`src/game/*.test.ts`); the scene and the `render/` +
+  `ui/` modules are not, so a green suite does not prove anything still renders — do a manual
+  run check too.
+- Z-order trap: end-screen objects and the sudoku button carry no explicit `depth`, so their
+  stacking depends on creation order in `GameScene.create()`. Do not reorder it casually.
 
 ## Read In This Order
 
@@ -47,8 +49,12 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - Run timer, collisions, start/stop phases -> `src/game/runState.ts`, `src/game/types.ts`
 - Spawn behavior, orb appearance -> `src/game/spawnSystem.ts`
 - Pickup definitions, on-collect effects -> `src/game/pickupCatalog.ts`
-- Fog of war / vision radius -> `src/game/visibility.ts`, `src/scenes/GameScene.ts`
-- Store cards, popup, click behavior -> `src/scenes/GameScene.ts`, `src/game/metaState.ts`
+- Fog of war / vision radius -> `src/game/visibility.ts`, `src/render/boardRenderer.ts`
+- Store cards, popup, click behavior -> `src/ui/storeCardGrid.ts`, `src/ui/storeView.ts`, `src/game/metaState.ts`
+- HUD, end screen -> `src/ui/hudView.ts`, `src/ui/endScreenView.ts`
+- Board / slug / entity drawing, colors, geometry -> `src/render/boardRenderer.ts`, `src/render/layout.ts`
+- Key bindings, mouse wheel -> `src/input/keyboardControls.ts`
+- Game loop, phase orchestration -> `src/scenes/GameScene.ts`
 - Talent definitions, availability, costs -> `src/game/talentCatalog.ts`
 - Effect computation and run stat modifiers -> `src/game/effects/schema.ts`, `src/game/effects/engine.ts`
 - Talent images, art, icons -> `docs/talent-art-guide.md`

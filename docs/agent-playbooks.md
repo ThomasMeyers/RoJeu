@@ -15,7 +15,7 @@ Use these task-driven playbooks to avoid wide exploration.
 
 1. Reproduce with current phase/inputs and identify if bug belongs to run logic or render logic.
 2. Patch `src/game/*` first for rule correctness.
-3. If visual mismatch remains, patch `src/scenes/GameScene.ts`.
+3. If visual mismatch remains, patch `src/ui/storeCardGrid.ts` (cards) or `src/ui/storeView.ts` (chrome, popup).
 4. Run `npm test`, then `npm run build`.
 
 ### Gotchas
@@ -33,7 +33,7 @@ Use these task-driven playbooks to avoid wide exploration.
 
 ### Typical steps
 
-1. Verify whether issue is data state (`metaState`) or interaction/render (`GameScene`).
+1. Verify whether issue is data state (`metaState`) or interaction/render (`ui/storeView.ts`, `ui/storeCardGrid.ts`).
 2. Check store open/close and popup selection invariants.
 3. Guard against input propagation and hidden interactive layers.
 4. Run `npm test`, then `npm run build`.
