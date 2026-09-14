@@ -24,6 +24,8 @@ const TEXT_CENTER_Y = 270;
 const TEXT_WRAP_WIDTH = 460;
 const LINE_SPACING = 8;
 const INDICATOR_Y = 420;
+const SKIP_QUIP_Y = 355;
+const SKIP_QUIP_FADE_MS = 300;
 
 const STORY_TEXT_STYLE: Phaser.Types.GameObjects.Text.TextStyle = {
   fontFamily: FONT_FAMILY,
@@ -55,6 +57,8 @@ export class StoryScene extends Phaser.Scene {
   private punchlineText!: Phaser.GameObjects.Text;
 
   private continueIndicator!: Phaser.GameObjects.Text;
+
+  private skipQuipText!: Phaser.GameObjects.Text;
 
   private missionTexts: Phaser.GameObjects.Text[] = [];
 
@@ -101,6 +105,16 @@ export class StoryScene extends Phaser.Scene {
       yoyo: true,
       repeat: -1,
     });
+
+    this.skipQuipText = this.add
+      .text(centerX, SKIP_QUIP_Y, '', {
+        fontFamily: FONT_FAMILY,
+        fontSize: '15px',
+        fontStyle: 'italic',
+        color: '#c4b898',
+      })
+      .setOrigin(0.5)
+      .setVisible(false);
 
     this.createMissionBrief(centerX);
 
@@ -152,7 +166,9 @@ export class StoryScene extends Phaser.Scene {
     }
 
     const result = advanceStory(this.sequence, INTRO_BEATS);
-    if (result === 'next') {
+    if (result === 'revealed' && this.sequence.effectTriggerSkipped) {
+      this.showSkipQuip();
+    } else if (result === 'next') {
       this.enterBeat();
     } else if (result === 'finished') {
       this.showMissionBrief();
@@ -162,6 +178,7 @@ export class StoryScene extends Phaser.Scene {
   private enterBeat(): void {
     const beat = getCurrentBeat(this.sequence, INTRO_BEATS);
     this.clearTypedLines();
+    this.hideSkipQuip();
     this.tweens.killTweensOf(this.punchlineText);
     this.punchlineText.setVisible(false);
 
@@ -175,6 +192,21 @@ export class StoryScene extends Phaser.Scene {
 
     // Fired from update() once the typewriter reaches the beat's effect trigger.
     this.pendingShake = beat.effect === 'shake';
+  }
+
+  /** The player rushed past the effect trigger: the effect still fires, just too early. */
+  private showSkipQuip(): void {
+    const quip = getCurrentBeat(this.sequence, INTRO_BEATS).effectSkipQuip;
+    if (!quip) {
+      return;
+    }
+    this.skipQuipText.setText(quip).setAlpha(0).setVisible(true);
+    this.tweens.add({ targets: this.skipQuipText, alpha: 1, duration: SKIP_QUIP_FADE_MS });
+  }
+
+  private hideSkipQuip(): void {
+    this.tweens.killTweensOf(this.skipQuipText);
+    this.skipQuipText.setVisible(false);
   }
 
   /**
@@ -257,6 +289,7 @@ export class StoryScene extends Phaser.Scene {
   private showMissionBrief(): void {
     this.mode = 'mission';
     this.clearTypedLines();
+    this.hideSkipQuip();
     this.punchlineText.setVisible(false);
     this.continueIndicator.setVisible(false);
 

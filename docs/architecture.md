@@ -26,7 +26,8 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
   - Declarative copy for the title screen, the intro beats (stable IDs + optional `shake` /
     `punchline` effect) and the mission brief.
 - `src/game/storySequencer.ts`
-  - Pure intro progression: typewriter reveal, "first input completes the line, next one advances".
+  - Pure intro progression: typewriter reveal, "first input completes the line, next one advances",
+    effect trigger timing and the `effectTriggerSkipped` flag behind the skip quip.
 - `src/game/effects/schema.ts` + `src/game/effects/engine.ts`
   - Run stat modifier schema and effect aggregation pipeline (`orb_yield` boosts `orbPointsMultiplier`, `passive_income` boosts `passiveIncomePointsPerSecond`, `vision_bonus_orb` boosts pickup spawn chance, `no_walls` sets `boundaryMode` to `wrap-around`).
 - `src/scenes/TitleScene.ts`

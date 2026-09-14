@@ -110,6 +110,48 @@ describe('isEffectTriggerReached', () => {
   });
 });
 
+describe('effectTriggerSkipped', () => {
+  const SHAKE_BEATS: StoryBeat[] = [
+    { id: 'beat_shake', text: 'Le sol vibre', effect: 'shake', effectTrigger: 'vibre' },
+    { id: 'beat_after', text: 'Ensuite' },
+  ];
+
+  it('flags a line completed by the player before its trigger was typed', () => {
+    const state = createStorySequence();
+    tickTypewriter(state, SHAKE_BEATS, 3 * MS_PER_CHAR, MS_PER_CHAR);
+
+    advanceStory(state, SHAKE_BEATS);
+
+    expect(state.effectTriggerSkipped).toBe(true);
+  });
+
+  it('does not flag a line completed after the trigger was typed', () => {
+    const state = createStorySequence();
+    tickTypewriter(state, SHAKE_BEATS, 8 * MS_PER_CHAR, MS_PER_CHAR);
+
+    advanceStory(state, SHAKE_BEATS);
+
+    expect(state.effectTriggerSkipped).toBe(false);
+  });
+
+  it('never flags a line without trigger', () => {
+    const state = createStorySequence();
+
+    advanceStory(state, BEATS);
+
+    expect(state.effectTriggerSkipped).toBe(false);
+  });
+
+  it('clears the flag when moving to the next beat', () => {
+    const state = createStorySequence();
+    advanceStory(state, SHAKE_BEATS);
+
+    advanceStory(state, SHAKE_BEATS);
+
+    expect(state.effectTriggerSkipped).toBe(false);
+  });
+});
+
 describe('INTRO_BEATS', () => {
   it('keeps every effect trigger present in its own text', () => {
     INTRO_BEATS.filter((beat) => beat.effectTrigger).forEach((beat) => {

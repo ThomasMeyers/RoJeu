@@ -107,7 +107,7 @@ Use these task-driven playbooks to avoid wide exploration.
 
 1. Edit or add an entry in `INTRO_BEATS` with a new stable `id` (never reuse the wording as ID).
 2. Pick an optional effect: `shake` (camera shake, timed by `effectTrigger`: the word whose first
-   letter fires it) or `punchline` (big text, fade-in,
+   letter fires it; add `effectSkipQuip` to scold players who reveal the line before it) or `punchline` (big text, fade-in,
    input locked briefly). A new effect needs a type in `storySequencer.ts` and staging in `StoryScene.ts`.
 3. Title, subtitle, rejected names and mission text live in `TITLE_SCREEN` / `MISSION_BRIEF`.
 4. Run `npm test`, then `npm run build`, and play through the intro once.

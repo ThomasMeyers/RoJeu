@@ -40,6 +40,7 @@ export const INTRO_BEATS: readonly StoryBeat[] = [
     text: 'Enfin… une nuit, plutôt. Alors que tu étais tranquille à ne rien faire, tu sentis le sol vibrer.',
     effect: 'shake',
     effectTrigger: 'vibrer',
+    effectSkipQuip: "(Laisse le temps au texte de s'afficher putain)",
   },
   {
     id: 'intro_brave_the_dark',

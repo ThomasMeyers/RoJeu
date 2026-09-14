@@ -11,12 +11,16 @@ export interface StoryBeat {
    * Without one, the effect fires as soon as the beat starts.
    */
   effectTrigger?: string;
+  /** Shown when the player reveals the line before `effectTrigger` is typed. */
+  effectSkipQuip?: string;
 }
 
 export interface StorySequenceState {
   beatIndex: number;
   revealedChars: number;
   charAccumulatorMs: number;
+  /** True once the current line was completed by the player before its effect trigger. */
+  effectTriggerSkipped: boolean;
 }
 
 /** What a player input did: completed the current line, moved on, or ended the story. */
@@ -26,6 +30,7 @@ export const createStorySequence = (): StorySequenceState => ({
   beatIndex: 0,
   revealedChars: 0,
   charAccumulatorMs: 0,
+  effectTriggerSkipped: false,
 });
 
 export const getCurrentBeat = (state: StorySequenceState, beats: readonly StoryBeat[]): StoryBeat =>
@@ -80,6 +85,7 @@ export const advanceStory = (
   beats: readonly StoryBeat[],
 ): StoryAdvanceResult => {
   if (!isBeatFullyRevealed(state, beats)) {
+    state.effectTriggerSkipped = !isEffectTriggerReached(state, beats);
     state.revealedChars = getCurrentBeat(state, beats).text.length;
     state.charAccumulatorMs = 0;
     return 'revealed';
@@ -92,5 +98,6 @@ export const advanceStory = (
   state.beatIndex += 1;
   state.revealedChars = 0;
   state.charAccumulatorMs = 0;
+  state.effectTriggerSkipped = false;
   return 'next';
 };

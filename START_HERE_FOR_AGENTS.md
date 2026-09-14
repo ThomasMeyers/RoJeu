@@ -48,7 +48,8 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - `vision_clarity_orb`: white pickup, no points, applies a temporary vision boost.
 - `intro beat`: one line of the new-game intro (`INTRO_BEATS`), revealed by typewriter unless its
   effect is `punchline` (shown whole, faded in). `shake` shakes the camera when the typewriter
-  reaches the beat's `effectTrigger` word (or on entry without one).
+  reaches the beat's `effectTrigger` word (or on entry without one). Rushing the line past that
+  word shows the beat's `effectSkipQuip` under the text.
 - `mission brief`: the screen after the intro, whose CTA creates the save and starts `GameScene`.
 - `rejected names`: joke titles cycled by clicking the placeholder title on the menu.
 
