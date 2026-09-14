@@ -1,12 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   canUpgradeTalent,
+  clearMetaState,
   collectTalentEffectIds,
   createDefaultMetaState,
   getStoreTalentItems,
   getTalentNextCost,
+  hasSavedMeta,
   isTalentUnlocked,
   loadMetaState,
+  saveMetaState,
   upgradeTalentLevel,
 } from './metaState';
 import type { MetaState } from './types';
@@ -214,5 +217,33 @@ describe('getStoreTalentItems', () => {
     expect(orbYield?.isMaxed).toBe(true);
     expect(orbYield?.nextCost).toBeNull();
     expect(orbYield?.canUpgrade).toBe(false);
+  });
+});
+
+describe('hasSavedMeta / clearMetaState', () => {
+  it('reports no save when storage is empty', () => {
+    expect(hasSavedMeta()).toBe(false);
+  });
+
+  it('reports no save when the stored data is corrupt', () => {
+    window.localStorage.setItem('snake-meta', 'not json at all');
+    expect(hasSavedMeta()).toBe(false);
+
+    window.localStorage.setItem('snake-meta', '{"totalPoints":"nope"}');
+    expect(hasSavedMeta()).toBe(false);
+  });
+
+  it('reports a save once a valid state has been written, even a fresh one', () => {
+    saveMetaState(createDefaultMetaState());
+    expect(hasSavedMeta()).toBe(true);
+  });
+
+  it('removes the save so the next load starts from scratch', () => {
+    saveMetaState(metaWith({ orb_yield: 2 }, 500));
+
+    clearMetaState();
+
+    expect(hasSavedMeta()).toBe(false);
+    expect(loadMetaState()).toEqual(createDefaultMetaState());
   });
 });

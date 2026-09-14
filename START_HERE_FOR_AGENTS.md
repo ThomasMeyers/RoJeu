@@ -16,6 +16,15 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - Z-order trap: end-screen objects and the sudoku button carry no explicit `depth`, so their
   stacking depends on creation order in `GameScene.create()`. Do not reorder it casually.
 
+## Scene Flow
+
+- `TitleScene` (shown on every launch) -> "Lancer une nouvelle partie" -> `StoryScene`
+  (intro beats, then mission brief) -> `GameScene`.
+- `TitleScene` -> "Continuer" (enabled only when `hasSavedMeta()`) -> `GameScene` directly.
+- New game over an existing save asks for confirmation, then `clearMetaState()`. The save is
+  recreated only when the mission CTA is clicked, so quitting mid-intro leaves no save.
+- There is no way back to the menu from `GameScene` (out of scope, decided 14/09/2026).
+
 ## Read In This Order
 
 1. `CLAUDE.md` (guardrails and scope)
@@ -37,6 +46,11 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - `vision_bonus_orb`: talent that unlocks `vision_clarity_orb` pickup spawns (+3% chance/level/sec).
 - `no_walls`: talent that switches boundary mode to `wrap-around` (no wall deaths).
 - `vision_clarity_orb`: white pickup, no points, applies a temporary vision boost.
+- `intro beat`: one line of the new-game intro (`INTRO_BEATS`), revealed by typewriter unless its
+  effect is `punchline` (shown whole, faded in). `shake` shakes the camera when the typewriter
+  reaches the beat's `effectTrigger` word (or on entry without one).
+- `mission brief`: the screen after the intro, whose CTA creates the save and starts `GameScene`.
+- `rejected names`: joke titles cycled by clicking the placeholder title on the menu.
 
 ## Naming Convention
 
@@ -58,6 +72,10 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - Talent definitions, availability, costs -> `src/game/talentCatalog.ts`
 - Effect computation and run stat modifiers -> `src/game/effects/schema.ts`, `src/game/effects/engine.ts`
 - Talent images, art, icons -> `docs/talent-art-guide.md`
+- Title screen, new game / continue, reset confirmation -> `src/scenes/TitleScene.ts`, `src/game/metaState.ts`
+- Intro text, mission text, title copy, rejected names -> `src/game/storyCatalog.ts`
+- Typewriter / beat progression rules -> `src/game/storySequencer.ts`; staging -> `src/scenes/StoryScene.ts`
+- Keyboard-focusable menu buttons -> `src/ui/menuButton.ts`
 
 ## Known Gotchas
 
@@ -75,5 +93,7 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 
 - `npm test` (unit tests on pure game logic)
 - `npm run build`
+- Verify the entry flow: menu -> new game -> intro -> mission CTA -> `GameScene`, and
+  "Continuer" after a reload
 - Verify one full run lifecycle: `waiting_start -> running -> ended`
 - Verify store flow: open -> inspect card -> upgrade -> close without side effects

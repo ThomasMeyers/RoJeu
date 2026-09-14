@@ -63,6 +63,20 @@ export const saveMetaState = (meta: MetaState): void => {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(meta));
 };
 
+/** True only when a readable save exists: a corrupt entry does not unlock "Continuer". */
+export const hasSavedMeta = (): boolean => {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    return raw !== null && isMetaState(JSON.parse(raw));
+  } catch {
+    return false;
+  }
+};
+
+export const clearMetaState = (): void => {
+  window.localStorage.removeItem(STORAGE_KEY);
+};
+
 const clampTalentLevel = (meta: MetaState, talent: TalentCatalogEntry): number => {
   const rawLevel = meta.talentLevels[talent.id] ?? 0;
   return Math.max(0, Math.min(rawLevel, talent.maxLevel));

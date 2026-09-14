@@ -22,8 +22,19 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
   - Persistent progression lifecycle (`load`, `save`, unlock checks, upgrade checks, store item view models).
 - `src/game/talentCatalog.ts`
   - Declarative talent catalog (title/description/levels/costs/availability/effect IDs/unlock rules/store row ordering).
+- `src/game/storyCatalog.ts`
+  - Declarative copy for the title screen, the intro beats (stable IDs + optional `shake` /
+    `punchline` effect) and the mission brief.
+- `src/game/storySequencer.ts`
+  - Pure intro progression: typewriter reveal, "first input completes the line, next one advances".
 - `src/game/effects/schema.ts` + `src/game/effects/engine.ts`
   - Run stat modifier schema and effect aggregation pipeline (`orb_yield` boosts `orbPointsMultiplier`, `passive_income` boosts `passiveIncomePointsPerSecond`, `vision_bonus_orb` boosts pickup spawn chance, `no_walls` sets `boundaryMode` to `wrap-around`).
+- `src/scenes/TitleScene.ts`
+  - Menu shown on every launch: new game (with reset confirmation over an existing save),
+    continue (enabled by `hasSavedMeta()`), rejected-names easter egg on the title.
+- `src/scenes/StoryScene.ts`
+  - Intro staging (per-line typewriter layout, camera shake, punchline fade, blinking ▼) and
+    mission brief; its CTA writes a fresh save and starts `GameScene`.
 - `src/scenes/GameScene.ts`
   - Orchestration only: owns run + meta state, drives the fixed-step loop, delegates all
     drawing and interaction to the modules below.
@@ -39,8 +50,22 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
   - Store chrome, scroll state and the talent detail popup.
 - `src/ui/storeCardGrid.ts`
   - The talent card grid: layout maths, scroll clipping, per-card styling and locked states.
+- `src/ui/menuButton.ts`
+  - Mouse + keyboard menu button (hover, press, focus ring, disabled) used by the menu scenes.
 - `src/input/keyboardControls.ts`
   - Keyboard and wheel bindings, wired to scene-supplied handlers.
+
+## Scene Flow
+
+```mermaid
+flowchart LR
+  title[TitleScene] -->|new game, no save| story[StoryScene]
+  title -->|new game, save exists| confirm{Confirm reset}
+  confirm -->|yes: clearMetaState| story
+  confirm -->|no| title
+  title -->|continue: hasSavedMeta| game[GameScene]
+  story -->|mission CTA: saveMetaState default| game
+```
 
 ## Runtime Data Flow
 
@@ -90,7 +115,9 @@ Unit tests live next to the module they cover, as `src/game/*.test.ts`, and run 
 - `runState.test.ts`: phase transitions, direction queueing and reversal guard, wall/self collision,
   life loss vs run end, timer expiry, orb scoring with multipliers, fractional point carry-over,
   timed-effect vision and speed resolution.
-- `metaState.test.ts`: save loading and corrupt-save fallback, talent costs, unlock chains
+- `storySequencer.test.ts`: typewriter reveal and carry-over, first input completes a line,
+  beat advance, punchlines shown whole, `finished` on the last beat, unique intro beat IDs.
+- `metaState.test.ts`: save loading and corrupt-save fallback, `hasSavedMeta` / `clearMetaState`, talent costs, unlock chains
   (`no_walls` then `speed_boost_pickup`), purchase side effects, level clamping, store view models.
 
 Two things the suite deliberately does not prove:
