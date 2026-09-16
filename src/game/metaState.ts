@@ -1,5 +1,10 @@
 import type { MetaState } from './types';
-import { TALENT_CATALOG, type TalentCatalogEntry, type TalentUnlockRule } from './talentCatalog';
+import {
+  ENDING_TALENT_ID,
+  TALENT_CATALOG,
+  type TalentCatalogEntry,
+  type TalentUnlockRule,
+} from './talentCatalog';
 
 const STORAGE_KEY = 'snake-meta';
 
@@ -165,6 +170,10 @@ export const upgradeTalentLevel = (meta: MetaState, talentId: string): boolean =
   saveMetaState(meta);
   return true;
 };
+
+/** Once bought, the finale stays replayable from the end screen. */
+export const isEndingUnlocked = (meta: MetaState): boolean =>
+  getTalentLevelById(meta, ENDING_TALENT_ID) >= 1;
 
 export const getStoreTalentItems = (meta: MetaState): TalentStoreItem[] =>
   getAvailableTalentCatalog().map((talent) => {

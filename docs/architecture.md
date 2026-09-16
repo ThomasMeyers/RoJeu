@@ -28,6 +28,17 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
 - `src/game/storySequencer.ts`
   - Pure intro progression: typewriter reveal, "first input completes the line, next one advances",
     effect trigger timing and the `effectTriggerSkipped` flag behind the skip quip.
+- `src/game/finaleRiddle.ts`
+  - Pure finale riddle: answer normalisation (case, accents, punctuation, apostrophes, spaces),
+    step progression without reset, wrong-answer quip rotation.
+- `src/game/finaleSpeech.ts`
+  - Pure finale speech progression: screens whose lines are revealed one by one, the optional aside
+    once a screen is complete, rewind to a previous screen (shown whole), and the revealed-character
+    count handed to the typed text block.
+- `src/game/finaleCatalog.ts` + `src/game/finaleSecret.ts`
+  - Finale copy in clear (riddle prompts, quips, labels) and the decoder for the generated base64
+    secret (answers, speech screens, closing). `finaleSecret.ts` is written by
+    `scripts/encode-finale.mjs` from the git-ignored `finale.local.json` (ADR 0005).
 - `src/game/effects/schema.ts` + `src/game/effects/engine.ts`
   - Run stat modifier schema and effect aggregation pipeline (`orb_yield` boosts `orbPointsMultiplier`, `passive_income` boosts `passiveIncomePointsPerSecond`, `vision_bonus_orb` boosts pickup spawn chance, `no_walls` sets `boundaryMode` to `wrap-around`).
 - `src/scenes/TitleScene.ts`
@@ -36,6 +47,9 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
 - `src/scenes/StoryScene.ts`
   - Intro staging (per-line typewriter layout, camera shake, punchline fade, blinking ▼) and
     mission brief; its CTA writes a fresh save and starts `GameScene`.
+- `src/scenes/FinaleScene.ts`
+  - Ending staging: typed riddle input, speech screens (typewriter, line-by-line reveal, asides,
+    rewind), closing card, fade back to `TitleScene`.
 - `src/scenes/GameScene.ts`
   - Orchestration only: owns run + meta state, drives the fixed-step loop, delegates all
     drawing and interaction to the modules below.
@@ -46,13 +60,16 @@ Keep game rules in `src/game/*` and orchestration/render/input in `src/scenes/*`
 - `src/ui/hudView.ts`
   - Top status bar, bottom status line, and the in-run `commit sudoku` button.
 - `src/ui/endScreenView.ts`
-  - Game-over overlay: title, contextual subtitle, run stats, restart/store CTAs.
+  - Game-over overlay: title, contextual subtitle, run stats, restart/store CTAs, and the finale
+    replay button (in place of the store hint) once `ending_unlock` is owned.
 - `src/ui/storeView.ts`
   - Store chrome, scroll state and the talent detail popup.
 - `src/ui/storeCardGrid.ts`
   - The talent card grid: layout maths, scroll clipping, per-card styling and locked states.
 - `src/ui/menuButton.ts`
   - Mouse + keyboard menu button (hover, press, focus ring, disabled) used by the menu scenes.
+- `src/ui/typedTextBlock.ts`
+  - Centred typewriter text block (one text per wrapped line), shared by `StoryScene` and `FinaleScene`.
 - `src/input/keyboardControls.ts`
   - Keyboard and wheel bindings, wired to scene-supplied handlers.
 
@@ -66,6 +83,8 @@ flowchart LR
   confirm -->|no| title
   title -->|continue: hasSavedMeta| game[GameScene]
   story -->|mission CTA: saveMetaState default| game
+  game -->|buy ending_unlock, or replay button| finale[FinaleScene]
+  finale -->|closing card| title
 ```
 
 ## Runtime Data Flow
@@ -118,8 +137,13 @@ Unit tests live next to the module they cover, as `src/game/*.test.ts`, and run 
   timed-effect vision and speed resolution.
 - `storySequencer.test.ts`: typewriter reveal and carry-over, first input completes a line,
   beat advance, punchlines shown whole, `finished` on the last beat, unique intro beat IDs.
+- `finaleRiddle.test.ts`: answer normalisation, exact words required, progression without reset,
+  blank input ignored, quip rotation. It uses stand-in answers: the real ones never appear in clear.
+- `finaleSpeech.test.ts`: screen normalisation, line-by-line reveal, screen transitions, rewind and
+  already-reached screens shown whole, revealed-character offsets.
+- `finaleCatalog.test.ts`: UTF-8 base64 round-trip, and the committed secret fits the riddle.
 - `metaState.test.ts`: save loading and corrupt-save fallback, `hasSavedMeta` / `clearMetaState`, talent costs, unlock chains
-  (`no_walls` then `speed_boost_pickup`), purchase side effects, level clamping, store view models.
+  (`no_walls`, `speed_boost_pickup`, then `ending_unlock`), purchase side effects, level clamping, store view models.
 
 Two things the suite deliberately does not prove:
 

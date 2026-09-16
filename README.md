@@ -27,6 +27,10 @@ Prerequis: Node.js 20+ (developpe sur Node 24) et npm.
 Autres commandes:
 - Tests unitaires: `npm test` (ou `npm run test:watch`)
 - Build de production: `npm run build`
+- Texte de fin (reponses de la devinette + discours): editer `finale.local.json` (non versionne,
+  format dans `finale.example.json`) puis `npm run encode-finale`
+- Sauvegarde de test: `npm run dev-save` copie un snippet a coller dans la console du navigateur
+  (`-- ending` pour une save avec la fin deja achetee, `-- reset` pour effacer)
 - Preview du build: `npm run preview`
 
 Controles clavier:

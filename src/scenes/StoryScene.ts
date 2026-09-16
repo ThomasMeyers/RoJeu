@@ -12,6 +12,7 @@ import {
 } from '../game/storySequencer';
 import { FONT_FAMILY } from '../render/layout';
 import { MenuButton } from '../ui/menuButton';
+import { TypedTextBlock } from '../ui/typedTextBlock';
 
 const MS_PER_CHAR = 35;
 const PUNCHLINE_FADE_MS = 600;
@@ -48,11 +49,7 @@ export class StoryScene extends Phaser.Scene {
 
   private pendingShake = false;
 
-  private wrapMeasure!: Phaser.GameObjects.Text;
-
-  private wrappedLines: string[] = [];
-
-  private lineTexts: Phaser.GameObjects.Text[] = [];
+  private typedText!: TypedTextBlock;
 
   private punchlineText!: Phaser.GameObjects.Text;
 
@@ -72,17 +69,19 @@ export class StoryScene extends Phaser.Scene {
     this.mode = 'intro';
     this.inputLockedUntilMs = 0;
     this.pendingShake = false;
-    this.wrappedLines = [];
-    this.lineTexts = [];
     this.sequence = createStorySequence();
 
     const centerX = this.scale.width / 2;
     this.cameras.main.setBackgroundColor('#0c0b07');
     this.cameras.main.fadeIn(600);
 
-    this.wrapMeasure = this.add
-      .text(0, 0, '', { ...STORY_TEXT_STYLE, wordWrap: { width: TEXT_WRAP_WIDTH } })
-      .setVisible(false);
+    this.typedText = new TypedTextBlock(this, {
+      centerX,
+      centerY: TEXT_CENTER_Y,
+      wrapWidth: TEXT_WRAP_WIDTH,
+      lineSpacing: LINE_SPACING,
+      style: STORY_TEXT_STYLE,
+    });
 
     this.punchlineText = this.add
       .text(centerX, TEXT_CENTER_Y, '', {
@@ -134,14 +133,13 @@ export class StoryScene extends Phaser.Scene {
     }
 
     tickTypewriter(this.sequence, INTRO_BEATS, deltaMs, MS_PER_CHAR);
-    this.renderTypedLines();
+    const fullyRevealed = isBeatFullyRevealed(this.sequence, INTRO_BEATS);
+    this.typedText.render(this.sequence.revealedChars, fullyRevealed);
     if (this.pendingShake && isEffectTriggerReached(this.sequence, INTRO_BEATS)) {
       this.pendingShake = false;
       this.cameras.main.shake(SHAKE_DURATION_MS, SHAKE_INTENSITY);
     }
-    this.continueIndicator.setVisible(
-      isBeatFullyRevealed(this.sequence, INTRO_BEATS) && this.time.now >= this.inputLockedUntilMs,
-    );
+    this.continueIndicator.setVisible(fullyRevealed && this.time.now >= this.inputLockedUntilMs);
   }
 
   private handleKeyDown(event: KeyboardEvent): void {
@@ -177,7 +175,7 @@ export class StoryScene extends Phaser.Scene {
 
   private enterBeat(): void {
     const beat = getCurrentBeat(this.sequence, INTRO_BEATS);
-    this.clearTypedLines();
+    this.typedText.clear();
     this.hideSkipQuip();
     this.tweens.killTweensOf(this.punchlineText);
     this.punchlineText.setVisible(false);
@@ -187,7 +185,7 @@ export class StoryScene extends Phaser.Scene {
       this.tweens.add({ targets: this.punchlineText, alpha: 1, duration: PUNCHLINE_FADE_MS });
       this.inputLockedUntilMs = this.time.now + PUNCHLINE_INPUT_LOCK_MS;
     } else {
-      this.layoutTypedLines(beat.text);
+      this.typedText.layout(beat.text);
     }
 
     // Fired from update() once the typewriter reaches the beat's effect trigger.
@@ -207,47 +205,6 @@ export class StoryScene extends Phaser.Scene {
   private hideSkipQuip(): void {
     this.tweens.killTweensOf(this.skipQuipText);
     this.skipQuipText.setVisible(false);
-  }
-
-  /**
-   * One left-anchored text per wrapped line, placed where the full line sits once
-   * centred: the typewriter then grows in place instead of re-wrapping and re-centring.
-   */
-  private layoutTypedLines(text: string): void {
-    const centerX = this.scale.width / 2;
-    this.wrappedLines = this.wrapMeasure.getWrappedText(text).map((line) => line.trimEnd());
-    this.lineTexts = this.wrappedLines.map((line) => this.add.text(0, 0, line, STORY_TEXT_STYLE));
-
-    const lineHeight = this.lineTexts[0]?.height ?? 0;
-    const blockHeight = this.lineTexts.length * (lineHeight + LINE_SPACING) - LINE_SPACING;
-    this.lineTexts.forEach((lineText, index) => {
-      lineText.setPosition(
-        centerX - lineText.width / 2,
-        TEXT_CENTER_Y - blockHeight / 2 + index * (lineHeight + LINE_SPACING),
-      );
-      lineText.setText('');
-    });
-  }
-
-  private renderTypedLines(): void {
-    const fullyRevealed = isBeatFullyRevealed(this.sequence, INTRO_BEATS);
-    let remainingChars = this.sequence.revealedChars;
-
-    this.lineTexts.forEach((lineText, index) => {
-      const line = this.wrappedLines[index];
-      const visible = fullyRevealed ? line : line.slice(0, Math.max(0, remainingChars));
-      if (lineText.text !== visible) {
-        lineText.setText(visible);
-      }
-      // Wrapping swallowed the space between this line and the next one.
-      remainingChars -= line.length + 1;
-    });
-  }
-
-  private clearTypedLines(): void {
-    this.lineTexts.forEach((lineText) => lineText.destroy());
-    this.lineTexts = [];
-    this.wrappedLines = [];
   }
 
   private createMissionBrief(centerX: number): void {
@@ -288,7 +245,7 @@ export class StoryScene extends Phaser.Scene {
 
   private showMissionBrief(): void {
     this.mode = 'mission';
-    this.clearTypedLines();
+    this.typedText.clear();
     this.hideSkipQuip();
     this.punchlineText.setVisible(false);
     this.continueIndicator.setVisible(false);

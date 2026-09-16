@@ -7,6 +7,7 @@ import {
   getStoreTalentItems,
   getTalentNextCost,
   hasSavedMeta,
+  isEndingUnlocked,
   isTalentUnlocked,
   loadMetaState,
   saveMetaState,
@@ -217,6 +218,31 @@ describe('getStoreTalentItems', () => {
     expect(orbYield?.isMaxed).toBe(true);
     expect(orbYield?.nextCost).toBeNull();
     expect(orbYield?.canUpgrade).toBe(false);
+  });
+});
+
+describe('ending_unlock', () => {
+  const EVERYTHING_ELSE_MAXED = { ...ROW_ONE_MAXED, no_walls: 1, speed_boost_pickup: 5 };
+
+  it('stays locked until every other talent is maxed', () => {
+    expect(
+      isTalentUnlocked(metaWith({ ...EVERYTHING_ELSE_MAXED, speed_boost_pickup: 4 }), 'ending_unlock'),
+    ).toBe(false);
+    expect(isTalentUnlocked(metaWith(EVERYTHING_ELSE_MAXED), 'ending_unlock')).toBe(true);
+  });
+
+  it('reports the ending unlocked only once bought', () => {
+    const meta = metaWith(EVERYTHING_ELSE_MAXED, 10_000);
+    expect(isEndingUnlocked(meta)).toBe(false);
+
+    expect(upgradeTalentLevel(meta, 'ending_unlock')).toBe(true);
+
+    expect(meta.totalPoints).toBe(0);
+    expect(isEndingUnlocked(meta)).toBe(true);
+  });
+
+  it('grants no gameplay effect', () => {
+    expect(collectTalentEffectIds(metaWith({ ending_unlock: 1 }))).toEqual([]);
   });
 });
 
