@@ -6,8 +6,14 @@ How to generate and integrate talent images for the store.
 
 - **Style:** Warm storybook cartoon — soft black outlines, rounded friendly shapes
 - **Palette:** Earth tones (greens, browns, warm amber highlights) on a dark charcoal background (`#1a2233`)
+  — this is the background painted *inside* the artwork. Verified against the shipped icons, whose
+  top-left pixel sits between `#1d2635` and `#222a35`. Do not confuse it with `STORE_CARD_IMAGE_BG`
+  (`0x2a2518`, `src/render/layout.ts`): that warm brown is only the fallback square drawn when a
+  talent has no image.
 - **Mood:** Cozy adventure, not gloomy. Whimsical and humorous
-- **Output:** 512x512 PNG, square, no text, no frame/border
+- **Output:** 512x512 PNG, square, no text, no frame/border. Downscale before committing:
+  the first five icons were committed at 2048x2048 (~7 MB each) for something rendered at
+  72-140 px. Do not add more of those.
 
 ## Slug Character Sheet
 
@@ -59,7 +65,7 @@ After generating the image:
    - Linear filtering is applied automatically for smooth downscaling
    - Store cards render the sprite at 72x72 instead of the text placeholder
    - The detail popup renders the sprite at 140x140
-   - Locked state: tinted blue + 60% alpha
+   - Locked state: tinted amber (`0x887755`) + 60% alpha
    - Deeply locked state: image hidden, shows "?" text fallback
 
 ## Existing Talent Icons
@@ -71,3 +77,4 @@ After generating the image:
 | `vision_bonus_orb` | Filsdeputemalumiere | No (lightbulb) | `vision_bonus_orb.png` |
 | `no_walls` | Around the world | No (globe) | `no_walls.png` |
 | `speed_boost_pickup` | Ptit kawa ou kwa ? | Yes | `speed_boost_pickup.png` |
+| `ending_unlock` | Le skill de fin... | Yes | `ending_unlock.png` |

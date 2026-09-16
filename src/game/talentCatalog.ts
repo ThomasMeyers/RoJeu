@@ -144,6 +144,7 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     title: "Le skill de fin parce que j'ai pas eu le temps de dev plus",
     description: 'Débloque la fin du jeu. Révise tes classiques avant de cliquer.',
     imageToken: 'FIN',
+    imageAsset: 'talent_ending_unlock',
     maxLevel: 1,
     costsByLevel: [10000],
     isAvailable: true,
