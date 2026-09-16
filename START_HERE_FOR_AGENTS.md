@@ -8,7 +8,7 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
   implemented (no swipe handler exists) — do not add one without an explicit request.
 - **No deployment.** The game is shared by giving repo access; the recipient runs it locally
   (`npm install`, `npm run dev`). Do not add hosting, CI, or deploy config.
-- Known gaps, tracked in `IMPLEMENTATION_PLAN.md` (M5): no lint/format config, and the
+- Known gaps, tracked in `docs/implementation-plan.md` (M5): no lint/format config, and the
   "slime trail" visual effect from the original plan was never built.
 - Pure game logic is covered by Vitest (`src/game/*.test.ts`); the scene and the `render/` +
   `ui/` modules are not, so a green suite does not prove anything still renders — do a manual
@@ -31,7 +31,8 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 ## Read In This Order
 
 1. `CLAUDE.md` (guardrails and scope)
-2. `README.md` (product scope and current milestones)
+2. `docs/project-notes.md` (product scope, backlog and store spec; `README.md` is the
+   player-facing landing page and deliberately says nothing about the finale)
 3. `docs/architecture.md` (module map and data flow)
 4. `docs/agent-playbooks.md` (task-based execution guide)
 5. `docs/doc-maintenance.md` (what docs to update after code changes)

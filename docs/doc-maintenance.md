@@ -4,7 +4,9 @@ Use this checklist after substantial code changes.
 
 ## Mandatory
 
-- Update `README.md` if feature scope/user-facing behavior changed.
+- Update `docs/project-notes.md` if feature scope/user-facing behavior changed.
+- Update `README.md` only if launching the game or the controls changed. Keep it short and
+  free of any hint about the finale: it is the first file the recipient reads.
 - Update `START_HERE_FOR_AGENTS.md` if entrypoints, modules, or terminology changed.
 - Update `docs/architecture.md` if module responsibilities or core flow changed.
 
@@ -12,7 +14,7 @@ Use this checklist after substantial code changes.
 
 - Update `docs/agent-playbooks.md` when a workflow changes (new pitfalls, new files to touch).
 - Add or update an ADR in `docs/adr/` when a non-trivial technical decision is made.
-- Update backlog bullets in `README.md` when TODO scope changes.
+- Update backlog bullets in `docs/project-notes.md` when TODO scope changes.
 
 ## Validation
 
