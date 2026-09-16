@@ -26,6 +26,9 @@ export interface TalentCatalogEntry {
   storeOrder: number;
 }
 
+/** Bought last: opens the finale instead of changing gameplay. */
+export const ENDING_TALENT_ID = 'ending_unlock';
+
 export const TALENT_CATALOG: TalentCatalogEntry[] = [
   {
     id: 'orb_yield',
@@ -135,5 +138,28 @@ export const TALENT_CATALOG: TalentCatalogEntry[] = [
     },
     storeRow: 3,
     storeOrder: 1,
-  }
+  },
+  {
+    id: ENDING_TALENT_ID,
+    title: "Le skill de fin parce que j'ai pas eu le temps de dev plus",
+    description: 'Débloque la fin du jeu. Révise tes classiques avant de cliquer.',
+    imageToken: 'FIN',
+    maxLevel: 1,
+    costsByLevel: [10000],
+    isAvailable: true,
+    effectIdsByLevel: [],
+    unlockRule: {
+      type: 'requires_talents_all',
+      requirements: [
+        { talentId: 'orb_yield', minLevel: 5 },
+        { talentId: 'passive_income', minLevel: 5 },
+        { talentId: 'vision_bonus_orb', minLevel: 5 },
+        { talentId: 'no_walls', minLevel: 1 },
+        { talentId: 'speed_boost_pickup', minLevel: 5 },
+      ],
+      requirementText: 'Maxer tous les autres talents.',
+    },
+    storeRow: 4,
+    storeOrder: 1,
+  },
 ];

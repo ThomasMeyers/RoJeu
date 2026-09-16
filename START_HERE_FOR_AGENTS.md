@@ -24,6 +24,9 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - New game over an existing save asks for confirmation, then `clearMetaState()`. The save is
   recreated only when the mission CTA is clicked, so quitting mid-intro leaves no save.
 - There is no way back to the menu from `GameScene` (out of scope, decided 14/09/2026).
+- `GameScene` -> `FinaleScene` when `ending_unlock` is bought in the store, or from the end-screen
+  "Relire le discours" button once owned. Every visit starts again at the riddle. `FinaleScene`
+  ends on `TitleScene`.
 
 ## Read In This Order
 
@@ -52,6 +55,15 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
   word shows the beat's `effectSkipQuip` under the text.
 - `mission brief`: the screen after the intro, whose CTA creates the save and starts `GameScene`.
 - `rejected names`: joke titles cycled by clicking the placeholder title on the menu.
+- `ending_unlock`: last talent (row 4, 10 000 p., every other talent maxed). No gameplay effect:
+  buying it opens `FinaleScene`.
+- `finale`: riddle (complete three lines by typing; wrong answers show a rotating quip, no reset)
+  -> speech -> closing card -> title screen.
+- `speech screen`: one screen of the speech. Its `lines` are revealed one per input and stay on
+  screen; its optional `aside` fades in below, small and italic, once every line is out. ↑/← goes
+  back one whole screen, shown complete.
+- `finale secret`: riddle answers + speech + closing, base64-encoded in `src/game/finaleSecret.ts`
+  from the git-ignored `finale.local.json` (ADR 0005).
 
 ## Naming Convention
 
@@ -77,6 +89,11 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - Intro text, mission text, title copy, rejected names -> `src/game/storyCatalog.ts`
 - Typewriter / beat progression rules -> `src/game/storySequencer.ts`; staging -> `src/scenes/StoryScene.ts`
 - Keyboard-focusable menu buttons -> `src/ui/menuButton.ts`
+- Finale riddle, answer tolerance, quips, labels -> `src/game/finaleRiddle.ts`, `src/game/finaleCatalog.ts`
+- Finale speech progression (screens, lines, aside, rewind) -> `src/game/finaleSpeech.ts`
+- Finale answers, speech, closing text -> `finale.local.json`, then `npm run encode-finale`
+  (never edit `src/game/finaleSecret.ts` by hand)
+- Finale staging, typing, paragraph navigation -> `src/scenes/FinaleScene.ts`, `src/ui/typedTextBlock.ts`
 
 ## Known Gotchas
 
@@ -85,6 +102,12 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
 - Visibility must hide entities outside vision radius both in logic and render path.
 - Keep store UI-only changes separate from gameplay effect activation unless explicitly requested.
 - Pickup spawn caps are per pickup type (not global across all pickups).
+- Never commit finale content in clear: not `finale.local.json`, and not the real riddle answers in
+  tests, docs or commit messages. Only the generated base64 `finaleSecret.ts` is versioned.
+- Phaser replays its pending key queue on every new key until the frame ends (its duplicate guard
+  only compares with the previous event), so a burst of keys within one frame can reach a `keydown`
+  handler twice. `FinaleScene` handles each native event once (`handledKeyEvents`); `StoryScene`
+  does not, so a very fast double press can skip an intro beat.
 
 ## Storage Policy TODO
 
@@ -98,3 +121,6 @@ This file is the fastest onboarding path for an agent working on `Personal Proje
   "Continuer" after a reload
 - Verify one full run lifecycle: `waiting_start -> running -> ended`
 - Verify store flow: open -> inspect card -> upgrade -> close without side effects
+- If the finale changed: `npm run dev-save` gives a console snippet seeding a save ready to buy
+  `ending_unlock` (`-- ending` for one that already owns it). Then buy the talent, solve the riddle,
+  read to the closing card, and check the replay button on the end screen

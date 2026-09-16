@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { FINALE_COPY } from '../game/finaleCatalog';
+import { isEndingUnlocked } from '../game/metaState';
 import type { MetaState, RunState } from '../game/types';
 import {
   BOARD_CENTER_X,
@@ -19,7 +21,12 @@ export interface EndScreenHandlers {
   onOpenStore: () => void;
   /** Guards the store button against clicks once the run is no longer ended. */
   canOpenStore: () => boolean;
+  /** Only reachable once `ending_unlock` is owned: the button is hidden before that. */
+  onReplayFinale: () => void;
 }
+
+const REPLAY_BUTTON_FILL = 0x2e2820;
+const REPLAY_BUTTON_FILL_HOVER = 0x3d3426;
 
 const resolveSubtitle = (state: RunState): string => {
   switch (state.deathReason) {
@@ -38,9 +45,14 @@ const resolveSubtitle = (state: RunState): string => {
   }
 };
 
-/** Game-over overlay: title, contextual subtitle, run stats, and the two CTAs. */
+/**
+ * Game-over overlay: title, contextual subtitle, run stats, the two CTAs, and the
+ * finale replay button that takes the store hint's place once the ending is owned.
+ */
 export class EndScreenView {
   private readonly scene: Phaser.Scene;
+
+  private replayAvailable = false;
 
   private overlayBg!: Phaser.GameObjects.Rectangle;
 
@@ -59,6 +71,10 @@ export class EndScreenView {
   private upgradeButtonText!: Phaser.GameObjects.Text;
 
   private upgradeHintText!: Phaser.GameObjects.Text;
+
+  private replayButtonBg!: Phaser.GameObjects.Rectangle;
+
+  private replayButtonText!: Phaser.GameObjects.Text;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -174,6 +190,29 @@ export class EndScreenView {
       })
       .setOrigin(0.5)
       .setVisible(false);
+
+    // Smaller than the CTAs: the board ends 18px below it.
+    this.replayButtonBg = this.scene.add
+      .rectangle(centerX, centerY + 215, 240, 34, REPLAY_BUTTON_FILL, 1)
+      .setStrokeStyle(1, 0xb89850)
+      .setInteractive({ useHandCursor: true })
+      .setVisible(false);
+    this.replayButtonBg.on('pointerdown', () => handlers.onReplayFinale());
+    this.replayButtonBg.on('pointerover', () => {
+      this.replayButtonBg.setFillStyle(REPLAY_BUTTON_FILL_HOVER, 1);
+    });
+    this.replayButtonBg.on('pointerout', () => {
+      this.replayButtonBg.setFillStyle(REPLAY_BUTTON_FILL, 1);
+    });
+
+    this.replayButtonText = this.scene.add
+      .text(centerX, centerY + 215, FINALE_COPY.replayLabel, {
+        fontFamily: FONT_FAMILY,
+        fontSize: '15px',
+        color: '#ffd892',
+      })
+      .setOrigin(0.5)
+      .setVisible(false);
   }
 
   setVisible(visible: boolean): void {
@@ -185,18 +224,19 @@ export class EndScreenView {
     this.restartButtonText.setVisible(visible);
     this.upgradeButtonBg.setVisible(visible);
     this.upgradeButtonText.setVisible(visible);
-    this.upgradeHintText.setVisible(visible);
+    this.upgradeHintText.setVisible(visible && !this.replayAvailable);
+    this.replayButtonBg.setVisible(visible && this.replayAvailable);
+    this.replayButtonText.setVisible(visible && this.replayAvailable);
   }
 
   /** Disabled while the store is open, so clicks do not fall through to it. */
   setButtonsInteractive(enabled: boolean): void {
+    const buttons = [this.restartButtonBg, this.upgradeButtonBg, this.replayButtonBg];
     if (enabled) {
-      this.restartButtonBg.setInteractive({ useHandCursor: true });
-      this.upgradeButtonBg.setInteractive({ useHandCursor: true });
+      buttons.forEach((button) => button.setInteractive({ useHandCursor: true }));
       return;
     }
-    this.restartButtonBg.disableInteractive();
-    this.upgradeButtonBg.disableInteractive();
+    buttons.forEach((button) => button.disableInteractive());
   }
 
   refresh(state: RunState, meta: MetaState): void {
@@ -211,5 +251,10 @@ export class EndScreenView {
     this.statsText.setText(
       `Points obtenus: ${state.score}\nPoints totaux: ${meta.totalPoints}\nTemps de survie: ${survivalSec}s`,
     );
+
+    this.replayAvailable = isEndingUnlocked(meta);
+    this.upgradeHintText.setVisible(!this.replayAvailable);
+    this.replayButtonBg.setVisible(this.replayAvailable);
+    this.replayButtonText.setVisible(this.replayAvailable);
   }
 }

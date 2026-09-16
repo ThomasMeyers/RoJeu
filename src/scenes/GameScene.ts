@@ -17,6 +17,8 @@ import { EndScreenView } from '../ui/endScreenView';
 import { HudView } from '../ui/hudView';
 import { StoreView } from '../ui/storeView';
 
+const FINALE_FADE_MS = 600;
+
 /**
  * Orchestrates one game session: owns run and meta state, drives the fixed-step
  * loop, and delegates every pixel to the render/ and ui/ modules.
@@ -27,6 +29,9 @@ export class GameScene extends Phaser.Scene {
   private meta!: MetaState;
 
   private isPaused = false;
+
+  /** Set while fading out to the finale: gameplay inputs are ignored from then on. */
+  private isLeavingForFinale = false;
 
   private tickAccumulatorMs = 0;
 
@@ -61,6 +66,9 @@ export class GameScene extends Phaser.Scene {
 
   create() {
     this.cameras.main.setBackgroundColor('#14120c');
+    this.isPaused = false;
+    this.isLeavingForFinale = false;
+    this.tickAccumulatorMs = 0;
     this.meta = loadMetaState();
     this.runState = this.createFreshRunState();
 
@@ -77,11 +85,13 @@ export class GameScene extends Phaser.Scene {
       onRestart: () => this.restartRun(),
       onOpenStore: () => this.store.openStore(),
       canOpenStore: () => this.runState.phase === 'ended',
+      onReplayFinale: () => this.startFinale(),
     });
 
     this.store = new StoreView(this);
     this.store.create(this.meta, {
       onEndScreenInteractiveChange: (enabled) => this.endScreen.setButtonsInteractive(enabled),
+      onEndingPurchased: () => this.startFinale(),
     });
 
     this.hud.createSudokuButton(() => {
@@ -92,7 +102,11 @@ export class GameScene extends Phaser.Scene {
     });
 
     registerGameInputs(this, {
-      onDirection: (direction) => queueDirection(this.runState, direction, this.time.now),
+      onDirection: (direction) => {
+        if (!this.isLeavingForFinale) {
+          queueDirection(this.runState, direction, this.time.now);
+        }
+      },
       onRestart: () => this.restartRun(),
       onTogglePause: () => this.togglePause(),
       onScroll: (deltaY) => {
@@ -135,11 +149,28 @@ export class GameScene extends Phaser.Scene {
   }
 
   private restartRun() {
+    if (this.isLeavingForFinale) {
+      return;
+    }
     this.tickAccumulatorMs = 0;
     this.isPaused = false;
     this.store.close();
     this.runState = this.createFreshRunState();
     this.redraw();
+  }
+
+  /** Buying `ending_unlock`, or the end-screen replay button, fades out to the finale. */
+  private startFinale() {
+    if (this.isLeavingForFinale || this.runState.phase !== 'ended') {
+      return;
+    }
+    this.isLeavingForFinale = true;
+    this.store.close();
+    this.endScreen.setButtonsInteractive(false);
+    this.cameras.main.fadeOut(FINALE_FADE_MS);
+    this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+      this.scene.start('FinaleScene');
+    });
   }
 
   private togglePause() {

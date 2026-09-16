@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { getStoreTalentItems, upgradeTalentLevel } from '../game/metaState';
+import { ENDING_TALENT_ID } from '../game/talentCatalog';
 import type { MetaState } from '../game/types';
 import {
   BOARD_CENTER_X,
@@ -22,6 +23,8 @@ import { StoreCardGrid } from './storeCardGrid';
 export interface StoreHandlers {
   /** End-screen buttons must be inert while the store covers them. */
   onEndScreenInteractiveChange: (enabled: boolean) => void;
+  /** Buying the ending talent leaves the run for the finale straight away. */
+  onEndingPurchased: () => void;
 }
 
 /**
@@ -312,9 +315,14 @@ export class StoreView {
         if (!this.selectedTalentId) {
           return;
         }
-        if (upgradeTalentLevel(this.meta, this.selectedTalentId)) {
-          this.refresh();
+        if (!upgradeTalentLevel(this.meta, this.selectedTalentId)) {
+          return;
         }
+        if (this.selectedTalentId === ENDING_TALENT_ID) {
+          this.handlers.onEndingPurchased();
+          return;
+        }
+        this.refresh();
       },
     );
 
@@ -439,6 +447,9 @@ export class StoreView {
     }
 
     this.popupTitleText.setText(selected.isDeeplyLocked ? '???' : selected.title);
+    // Long titles wrap onto several lines: keep the level and description stacked below.
+    this.popupLevelText.setY(this.popupTitleText.y + this.popupTitleText.height);
+    this.popupDescriptionText.setY(this.popupLevelText.y + 24);
     if (selected.isUnlocked) {
       if (selected.isMaxed) {
         this.popupLevelText.setText('MAX');

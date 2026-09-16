@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Finale plain text (answers + speech): encode with `npm run encode-finale`, never commit
+finale.local.json

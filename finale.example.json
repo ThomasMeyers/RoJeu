@@ -1,0 +1,18 @@
+{
+  "answers": [
+    "Réponse à la réplique 1",
+    "Réponse à la réplique 2",
+    "Réponse à la réplique 3"
+  ],
+  "speechScreens": [
+    "Un écran simple : une seule ligne, tapée à la machine. Vise 4 à 6 lignes à l'écran au maximum.",
+    {
+      "lines": [
+        "Première ligne de l'écran, révélée d'abord.",
+        "Deuxième ligne, révélée à la touche suivante, sous la première."
+      ],
+      "aside": "(Aparté en petit italique, qui apparaît une fois la dernière ligne affichée.)"
+    }
+  ],
+  "closing": "Fin.\n\n— Signature"
+}

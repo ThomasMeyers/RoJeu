@@ -118,3 +118,33 @@ Use these task-driven playbooks to avoid wide exploration.
 - Rewording a beat can drop its `effectTrigger` word: a catalog test fails if it does.
 - Long beats wrap onto several lines; keep them under about three lines at 22px.
 - The save is only created by the mission CTA: do not move `saveMetaState` earlier without asking.
+
+## 6) Edit Finale Text (riddle answers, speech, closing)
+
+### Read first
+
+- `finale.example.json` (format)
+- `src/game/finaleCatalog.ts` (prompts, wrong-answer quips and labels: those stay in clear)
+
+### Typical steps
+
+1. Edit `finale.local.json` at the project root (git-ignored; copy `finale.example.json` if missing).
+   One `speechScreens` entry per screen: a plain string, or `{ "lines": [...], "aside": "..." }` when
+   the lines should be revealed one per input and end on a small italic aside.
+2. Run `npm run encode-finale`: it validates the file and rewrites `src/game/finaleSecret.ts`.
+3. Run `npm test` (the catalog test checks the generated secret), then `npm run build`.
+4. Play it: `npm run dev-save` prints (and copies) a snippet to paste in the game's browser console,
+   which seeds a save with every other talent maxed and enough points to buy `ending_unlock`
+   (`-- ending` seeds it already owned, `-- reset` clears the save). Then buy the talent, solve the
+   riddle and read to the closing card.
+
+### Gotchas
+
+- Never commit `finale.local.json`, and never write the real answers in clear in tests, docs or
+  commit messages.
+- `finaleSecret.ts` is generated: hand edits are lost on the next encode.
+- Keep a screen under about 8 wrapped lines (19px on a 480px width), aside included, or it runs into
+  the ▼ indicator.
+- The prompt count lives in `FINALE_RIDDLE_PROMPTS` and in the script's `PROMPT_COUNT`; the catalog
+  test fails if they drift.
+- Base64 is not encryption: decoding `finaleSecret.ts` reveals the finale (ADR 0005).

@@ -6,6 +6,8 @@ import { MenuButton } from '../ui/menuButton';
 
 const REJECTED_NAME_DISPLAY_MS = 1500;
 const CONFIRM_DEPTH = 10;
+/** Swallows the key that brought us here, so it cannot also fire a menu button. */
+const ENTRY_INPUT_LOCK_MS = 250;
 
 /**
  * Menu shown on every launch: new game (intro) or continue (straight to the run).
@@ -32,11 +34,14 @@ export class TitleScene extends Phaser.Scene {
 
   private isConfirmOpen = false;
 
+  private inputLockedUntilMs = 0;
+
   constructor() {
     super('TitleScene');
   }
 
   create() {
+    this.inputLockedUntilMs = this.time.now + ENTRY_INPUT_LOCK_MS;
     this.rejectedNameIndex = -1;
     this.titleResetTimer = null;
     this.isConfirmOpen = false;
@@ -107,10 +112,11 @@ export class TitleScene extends Phaser.Scene {
     }
 
     // Held keys auto-repeat: without this guard, holding Enter would open the
-    // popup and immediately activate its focused button.
+    // popup and immediately activate its focused button. The entry lock does the same
+    // for the key that started this scene, such as the one leaving the finale.
     const onPress = (key: string, handler: () => void) => {
       keyboard.on(`keydown-${key}`, (event: KeyboardEvent) => {
-        if (!event.repeat) {
+        if (!event.repeat && this.time.now >= this.inputLockedUntilMs) {
           handler();
         }
       });
