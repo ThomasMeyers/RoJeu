@@ -1,7 +1,6 @@
-# Snake
+# Le RoJeu, le jeu du Rogie.
 
-Mini-jeu web inspire de Snake.
-Projet perso, joue en local sur ordinateur, au clavier.
+Mini-jeu web, projet perso, joue en local sur ordinateur, au clavier.
 
 ## Lancer le jeu
 
