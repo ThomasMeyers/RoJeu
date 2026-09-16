@@ -1,6 +1,6 @@
-# Snake (surprise project)
+# Snake
 
-Mini-jeu web inspire de Snake, avec une limace a la place du serpent.
+Mini-jeu web inspire de Snake.
 Projet perso, joue en local sur ordinateur, au clavier.
 
 ## Lancer le jeu
